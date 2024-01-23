@@ -1,28 +1,128 @@
-import React, { useState } from 'react';
-import { View, Text, Button, Animated, TextInput } from 'react-native';
-import { Bubbles, DoubleBounce, Bars, Pulse } from 'react-native-loader';
-//import { Input } from 'beeshell';
+import React from 'react';
+import { Image, Text, TouchableOpacity } from 'react-native';
+import {
+    AnimatedTabBarNavigator,
+    DotSize,
+    TabElementDisplayOptions,
+} from 'react-native-animated-nav-tab-bar';
+import Icon from 'react-native-vector-icons/Feather';
+import styled from 'styled-components/native';
+import { NavigationContainer } from '@react-navigation/native';
+import BlogList from './BlogList';
 
-const AnimatedInput = Animated.createAnimatedComponent(Text);
-const AnimatedBeeShell = Animated.createAnimatedComponent(TextInput);
+const Tabs = AnimatedTabBarNavigator();
 
-export default function Test() {
-    const [fontSize, setFontSize] = useState(new Animated.Value(16));
+const Screen = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #f2f2f2;
+`;
 
-    const handlePress = () => {
-        Animated.timing(fontSize, {
-            toValue: 24,
-            duration: 500,
-            useNativeDriver: false,
-        }).start();
-    };
+const Logo = () => (
+    <Image
+        source={require('./logo.png')}
+        resizeMode={'cover'}
+        style={{ width: 150, height: 150 }}
+    />
+);
 
+const TabBarIcon = (props: any) => {
     return (
-        <View>
-            <Bubbles size={10} color="#FFF" />
-            <Bars size={10} color="#FDAAFF" />
-            <Pulse size={10} color="#52AB42" />
-            <DoubleBounce size={10} color="#1CAFF6" />
-        </View>
+        <Icon
+            name={props.name}
+            size={props.size ? props.size : 24}
+            color={props.tintColor}
+        />
     );
-}
+};
+
+const Home = (props: any) => (
+    <Screen>
+        <Logo />
+        <Text>Home</Text>
+        <TouchableOpacity onPress={() => props.navigation.navigate('Discover')}>
+            <Text>Go to Discover</Text>
+        </TouchableOpacity>
+    </Screen>
+);
+
+const Discover = (props: any) => (
+    <Screen>
+        <Logo />
+        <Text>Discover</Text>
+        <TouchableOpacity onPress={() => props.navigation.navigate('Home')}>
+            <Text>Go to Home</Text>
+        </TouchableOpacity>
+    </Screen>
+);
+
+const Images = () => (
+    <Screen>
+        <Logo />
+        <Text>Images</Text>
+    </Screen>
+);
+
+const Profile = () => (
+    <Screen>
+        <Logo />
+        <Text>Profile</Text>
+    </Screen>
+);
+
+export default () => (
+    <NavigationContainer>
+        <Tabs.Navigator
+            
+            initialRouteName="Home"
+            tabBarOptions={{
+                activeTintColor: '#ffffff',
+                inactiveTintColor: '#223322',
+                activeBackgroundColor: 'red',
+            }}
+            appearance={{
+                shadow: true,
+                floating: true,
+                whenActiveShow: TabElementDisplayOptions.ICON_ONLY,
+                dotSize: DotSize.SMALL,
+            }}>
+            <Tabs.Screen
+                name="Home"
+                component={BlogList}
+                options={{
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabBarIcon focused={focused} tintColor={color} name="home" />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="Discover"
+                component={Discover}
+                options={{
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabBarIcon focused={focused} tintColor={color} name="search" />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="Images"
+                component={Images}
+                options={{
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabBarIcon focused={focused} tintColor={color} name="image" />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="Profile"
+                component={Profile}
+                options={{
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabBarIcon focused={focused} tintColor={color} name="user" />
+                    ),
+                }}
+            />
+        </Tabs.Navigator>
+    </NavigationContainer>
+);

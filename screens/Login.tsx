@@ -12,7 +12,7 @@ import LoginWithPhoneCode from '../components/LoginWithPhoneCode';
 import FlipCard from 'react-native-flip-card';
 
 
-export default function Login({navigationRef}){
+export default function Login({navigation}){
     const [loginMethod,setLoginMethod] = useState(false);//false:使用用户名密码登陆,true:使用手机号验证码登陆
 
     const changeLoginMethod = () => {
@@ -30,9 +30,9 @@ export default function Login({navigationRef}){
                     <View style={styles.flipCardStyle}>
                         <FlipCard flip={loginMethod} flipHorizontal={true} clickable={false} flipVertical={false} friction={5} >
                             {/*正面*/}
-                            <LoginWithNamePwd navigationRef={navigationRef}></LoginWithNamePwd>
+                            <LoginWithNamePwd navigation={navigation}></LoginWithNamePwd>
                             {/*背面*/}
-                            <LoginWithPhoneCode navigationRef={navigationRef}></LoginWithPhoneCode>
+                            <LoginWithPhoneCode navigation={navigation}></LoginWithPhoneCode>
                         </FlipCard>
                     </View>
 

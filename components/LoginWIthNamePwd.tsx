@@ -8,7 +8,7 @@ import axios from 'axios';
 import Svg, { Path } from 'react-native-svg';
 
 
-export default function LoginWithNamePwd({navigationRef}){
+export default function LoginWithNamePwd({navigation}){
     const [UserName,SetUserName] = useState("");//用户名
     const [Password,SetPassword] = useState("");//密码
     const [LoginBackground,SetBackground] = useState('#ebcb22');
@@ -26,7 +26,7 @@ export default function LoginWithNamePwd({navigationRef}){
         //     }
 
         // );
-        navigationRef.navigate("Test");
+        navigation.navigate("Test");
     }
 
     return(

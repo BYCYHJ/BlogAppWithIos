@@ -10,6 +10,7 @@ import {
   Input,
 } from 'beeshell';
 import { Animated, Dimensions, StyleSheet, Text, View, TouchableOpacity, Modal, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Animatable from 'react-native-animatable';
 import axios from 'axios';
 import Svg, { Path } from 'react-native-svg';
@@ -20,6 +21,7 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import { useEffect } from 'react';
+import { EasyLoading, Loading } from "./Loading";
 
 const { Value, Text: AnimatedText } = Animated;
 
@@ -44,7 +46,7 @@ const animateCell = ({ hasValue, index, isFocused }) => {
 
 const AnimatedInput = Animated.createAnimatedComponent(Text);
 
-export default function LoginWithPhoneCode({ navigationRef }) {
+export default function LoginWithPhoneCode({ navigation }) {
   const [UserName, SetUserName] = useState("");//用户名
   const [CodeVisible, SetCodeVisible] = useState(false);//code visible
   const [NumWarningVisible, SetNumWarningVisible] = useState(false);
@@ -54,7 +56,9 @@ export default function LoginWithPhoneCode({ navigationRef }) {
   const anonymousNum = useRef("");//电话号码 aaa****bbbb格式
   const modalMsg = useRef("");//模态框信息
   const [modalVisible, setModalVisible] = useState(false);//模态框是否可见
-  const [verificationCode,setVerificationCode] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");//验证码
+  const [timing, setTiming] = useState(30);//验证码按钮禁用秒数
+  const [isPressed, setIsPressed] = useState(false);//是否点击了验证码按钮
 
   const [value, setValue] = useState('');
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
@@ -105,8 +109,19 @@ export default function LoginWithPhoneCode({ navigationRef }) {
     );
   };
 
+  //显示modal提示框，自动关闭时间2s
+  const showModalMsg = (msg: string) => {
+    modalMsg.current = msg;
+    setModalVisible(true);
+    setTimeout(() => {
+      setModalVisible(false);
+    }, 2000);
+  }
+
   //获取验证码
   const getVerificationCode = () => {
+    setIsPressed(true);
+    SetBackground("grey");
     const phoneRegex = /1\d{10}/;
     if (!phoneRegex.test(UserName)) {
       SetNumWarningVisible(true);
@@ -141,7 +156,7 @@ export default function LoginWithPhoneCode({ navigationRef }) {
           setModalVisible(true);
         }
         //成功
-        modalMsg.current = '已发送验证码，请注意查收'+ response.data;
+        modalMsg.current = '已发送验证码，请注意查收' + response.data;
         setModalVisible(true);
         setVerificationCode(response.data);
       })
@@ -156,27 +171,67 @@ export default function LoginWithPhoneCode({ navigationRef }) {
     //navigationRef.navigate("Test");
   }
 
+  //电话号码转为1ab****cdef格式
   useEffect(() => {
     const headStr = UserName.slice(0, 3);
     const endStr = UserName.slice(-4);
-    anonymousNum.current = '+86 '+ headStr + "****" + endStr;
+    anonymousNum.current = '+86 ' + headStr + "****" + endStr;
   }, [UserName])
 
+  //持久化存储
+  const setStorage = async (key, value) => {
+    await AsyncStorage.setItem(key, value);
+  }
+
+  //获取存储的值
+  const getStorage = async (key) => {
+    return await AsyncStorage.getItem(key);
+  }
+
+  //验证码按钮禁用
+  useEffect(() => {
+    let interval;
+    if (timing > 0 && isPressed) {
+      interval = setInterval(() => {
+        setTiming((prevTiming) => prevTiming - 1);
+      }, 1000);
+    }
+    if (timing <= 0) {
+      setTiming(30);
+      SetBackground('#ebcb22');
+      setIsPressed(false);
+    }
+    return () => clearInterval(interval);
+  }, [timing,isPressed])
+
   //验证码校验
-  useEffect(()=>{
-    if(value.length == CELL_COUNT && value == verificationCode){
+  useEffect(() => {
+    if (value.length == CELL_COUNT && value == verificationCode) {
+      EasyLoading.show();//loader
       axios({
-        method:'post',
-        url:'http://47.109.141.21:5211/api/Login/LoginWithPhone',
-        params:{
-          phone:UserName,
-          code:value
+        method: 'post',
+        url: 'http://47.109.141.21:5211/api/Login/LoginWithPhone',
+        params: {
+          phone: UserName,
+          code: value
         }
       })
-      .then()
-      .catch();
+        .then(async response => {
+          //存储token
+          await setStorage("token", response.data);
+          EasyLoading.dismiss();//loader消失
+          navigation.navigate('Home');
+        })
+        .catch(error => {
+          showModalMsg("验证码错误:" + error.message);
+          setValue("");
+          EasyLoading.dismiss();//loader消失
+        });
+    } else if (value.length == CELL_COUNT && value != verificationCode) {
+      showModalMsg("验证码错误");
+      setValue("");
     }
-  },[value]);
+  }, [value]);
 
 
   return (
@@ -209,10 +264,12 @@ export default function LoginWithPhoneCode({ navigationRef }) {
         </Animatable.View>
       </Animated.View>
       <View style={styles.BottomArea}>
-        <TouchableOpacity activeOpacity={0.8} style={[styles.LoginButton]}
+        <TouchableOpacity disabled={isPressed} activeOpacity={0.8} style={[styles.LoginButton]}
           onPressIn={() => SetBackground('grey')} onPressOut={() => SetBackground('#edd038')} onPress={getVerificationCode}>
           <View style={{ height: '100%', width: '80%', borderRadius: 30, backgroundColor: LoginBackground, alignSelf: 'center' }}>
-            <Text style={[styles.SignInText, { backgroundColor: 'transparent' }]}>Get verification code</Text>
+            <Text style={[styles.SignInText, { backgroundColor: 'transparent' }]}>
+              {!isPressed ? 'Get verification code' : timing + 's'}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -223,6 +280,7 @@ export default function LoginWithPhoneCode({ navigationRef }) {
           </View>
         </View>
       </Modal>
+      <Loading style={{ backgroundColor: "transparent" }}></Loading>
     </View>
   );
 }
