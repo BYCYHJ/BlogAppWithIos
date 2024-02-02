@@ -12,9 +12,9 @@ import ReadOnlyBlog from './screens/TabTest';
 export default function App() {
   return (
     <GluestackUIProvider config={config}>
-      <Home></Home>
-      {/* <ReadOnlyBlog/> */}
-      {/* <Example></Example> */}
+      {/* <Home></Home> */}
+      <ReadOnlyBlog/>
+      {/* <RootStack/> */}
     </GluestackUIProvider>
 
     // <RootStack></RootStack>

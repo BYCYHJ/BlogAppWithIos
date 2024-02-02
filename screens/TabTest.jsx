@@ -44,7 +44,7 @@ export default function ReadOnlyBlog(props) {
     const [heartName, setHeartName] = useState("hearto");
     const [heartColor, setHeartColor] = useState("grey");
     const [spinAnim, setSpinAnim] = useState(new Animated.Value(0));
-    const [iconPressed, setIconPressed] = useState(false);
+    const [iconPressed,setIconPressed] = useState(false);
 
     //点击动画
     const heartOpacity = heartOpacityAnim.interpolate({
@@ -56,21 +56,22 @@ export default function ReadOnlyBlog(props) {
         outputRange: ['0deg', '15deg', '0deg', '-15deg', '0deg'],
     });
 
-    function pressHeartIcon() {
+    function pressHeartIcon(isPressed) {
         Animated.parallel([
             Animated.timing(heartOpacityAnim, {
-                toValue: iconPressed ? 0 : 1,
+                toValue: isPressed ? 0 : 1,
                 duration: 300,
                 useNativeDriver: true,
             }),
             Animated.timing(spinAnim, {
-                toValue: iconPressed ? 0 : 1,
+                toValue: isPressed ? 0 : 1,
                 duration: 300,
                 useNativeDriver: true,
             }),
         ]).start();
-        setHeartName(iconPressed ? 'heart' : 'hearto');
-        setHeartColor(iconPressed ? '#FE007F' : 'grey');
+        console.log('inner:'+isPressed);
+        setHeartName(isPressed ? 'heart' : 'hearto');
+        setHeartColor(isPressed ? '#FE007F' : 'grey');
     };
 
 
@@ -120,7 +121,11 @@ export default function ReadOnlyBlog(props) {
                             <TouchableOpacity activeOpacity={1} style={styles.bottomIconArea}
                                 onPress={() => {
                                     setIconPressed(!iconPressed);
-                                    pressHeartIcon();
+                                    setIconPressed(preState => {
+                                        pressHeartIcon(preState);
+                                        return preState;
+                                    });
+                                    //pressHeartIcon();
                                 }}>
                                 <AnimatedAntdIcon size={27} name={heartName} color={heartColor} style={{ transform: [{ rotate: spin }], opacity: heartOpacity}}/>
                                 <Text style={styles.bottomIconText}>3万</Text>
