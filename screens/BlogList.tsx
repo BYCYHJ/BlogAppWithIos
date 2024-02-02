@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Dimensions, View, Text, Button, StyleSheet, FlatList } from 'react-native';
+import { Dimensions, View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, ListItem, Card } from '@rneui/themed';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -27,9 +27,13 @@ function TabView1(props) {
     }
     ];
 
+    const pressBlog = ()=>{
+        props.navigation.navigate("Blog");
+    }
+
     const renderItem = ({ item }) => {
         return (
-            <View>
+            <TouchableOpacity activeOpacity={1} onPress={pressBlog}>
                 <View style={{ height: 15}} />
                 <ListItem containerStyle={{ borderRadius: 20,width:windowSet.width*0.98, backgroundColor: 'white', display: 'flex',alignSelf:'center'}} >
                     <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -75,7 +79,7 @@ function TabView1(props) {
                         </ListItem.Content>
                     </View>
                 </ListItem>
-            </View>
+            </TouchableOpacity>
         );
     };
     return (<FlashList data={exampleBlog} renderItem={renderItem} estimatedItemSize={10}/>);
@@ -85,7 +89,7 @@ function TabView2(props) {
     return <Text>aaa</Text>
 }
 
-export default function BlogList() {
+export default function BlogList({navigation}) {
 
     const [headerHeight, setHeaderHeight] = useState(200);
     const headerOnLayout = useCallback((event: any) => {
@@ -121,7 +125,7 @@ export default function BlogList() {
                 tabBarPosition='top'
                 tabBarTextStyle={{ fontWeight: 'bold' }}
             >
-                <TabView1 tabLabel="推荐" />
+                <TabView1 tabLabel="推荐" navigation={navigation}/>
                 <TabView2 tabLabel="关注" />
             </ScrollTabView>
         </View>

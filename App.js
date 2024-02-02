@@ -13,8 +13,8 @@ export default function App() {
   return (
     <GluestackUIProvider config={config}>
       {/* <Home></Home> */}
-      <ReadOnlyBlog/>
-      {/* <RootStack/> */}
+      {/* <ReadOnlyBlog/> */}
+      <RootStack/>
     </GluestackUIProvider>
 
     // <RootStack></RootStack>
