@@ -66,13 +66,13 @@ export default function LoginWithPhoneCode({ navigation }) {
     const animatedCellStyle = {
       backgroundColor: hasValue
         ? animationsScale[index].interpolate({
-            inputRange: [0, 1],
-            outputRange: [NOT_EMPTY_CELL_BG_COLOR, ACTIVE_CELL_BG_COLOR]
-          })
+          inputRange: [0, 1],
+          outputRange: [NOT_EMPTY_CELL_BG_COLOR, ACTIVE_CELL_BG_COLOR]
+        })
         : animationsColor[index].interpolate({
-            inputRange: [0, 1],
-            outputRange: [DEFAULT_CELL_BG_COLOR, ACTIVE_CELL_BG_COLOR]
-          }),
+          inputRange: [0, 1],
+          outputRange: [DEFAULT_CELL_BG_COLOR, ACTIVE_CELL_BG_COLOR]
+        }),
       borderRadius: animationsScale[index].interpolate({
         inputRange: [0, 1],
         outputRange: [CELL_SIZE, CELL_BORDER_RADIUS]
@@ -158,10 +158,11 @@ export default function LoginWithPhoneCode({ navigation }) {
     //   });
 
     try {
-      const params={
+      const params = {
         phone: UserName,
       }
       const { data, status } = await getPhoneTokenCode({ params })
+      //请求成功但服务器拒绝
       if (status > 299) {
         modalMsg.current = data
         setModalVisible(true)
@@ -171,6 +172,7 @@ export default function LoginWithPhoneCode({ navigation }) {
       setModalVisible(true)
       setVerificationCode(data)
     } catch (error) {
+      //未知错误
       modalMsg.current = error.message
       setModalVisible(true)
     }
