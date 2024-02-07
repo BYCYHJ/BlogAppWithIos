@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/Login';
 import Home from './screens/Home';
 import { Animated, Dimensions, StyleSheet, Text, View, TouchableOpacity, Modal, Alert } from 'react-native';
-import ReadOnlyBlog from './screens/TabTest';
+import ReadOnlyBlog from './screens/BlogDetail';
 
 export default function RootStack() {
     return (

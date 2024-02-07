@@ -10,6 +10,7 @@ import styled from 'styled-components/native';
 import { NavigationContainer } from '@react-navigation/native';
 import BlogList from './BlogList';
 import MyInfo from './MyInfo';
+import BlogChat from './BlogChat';
 
 const Tabs = AnimatedTabBarNavigator();
 
@@ -80,7 +81,7 @@ export default function Home({ navigation }) {
                 />
                 <Tabs.Screen
                     name="Message"
-                    component={Discover}
+                    component={BlogChat}
                     options={{
                         tabBarIcon: ({ focused, color }) => (
                             <TabBarIcon focused={focused} tintColor={color} name="message-square" />

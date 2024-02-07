@@ -29,7 +29,7 @@ const example = {
 	<li>贪心策略的正确性没有保障，因为我们提出的&quot;贪心策略&quot;有可能是错误的，正确的贪心策略是需要&quot;证明的&quot;；常用的证明方法是我们学过的数学中见过的证明方法。</li>
 </ol>
 
-<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<img alt="" src="https://free.wzznft.com/i/2024/02/01/nr2t38.png" style="height:200px; width:200px" /></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<img alt="" src="https://i.postimg.cc/7br8STM5/logo2.png" style="height:200px; width:200px" /></p>
 
 <p>&nbsp;</p>
 `

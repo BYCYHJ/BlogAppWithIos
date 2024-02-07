@@ -5,7 +5,9 @@ import BlogList from './screens/BlogList';
 import { GluestackUIProvider, Text, Box } from "@gluestack-ui/themed";
 import { config } from "@gluestack-ui/config";
 import Home from './screens/Home';
-import ReadOnlyBlog from './screens/TabTest';
+import ReadOnlyBlog from './screens/BlogDetail';
+import BlogChat from './screens/BlogChat';
+import './constant';
 
 
 
@@ -14,7 +16,8 @@ export default function App() {
     <GluestackUIProvider config={config}>
       {/* <Home></Home> */}
       {/* <ReadOnlyBlog/> */}
-      <RootStack/>
+      {/* <RootStack/> */}
+      <BlogChat/>
     </GluestackUIProvider>
 
     // <RootStack></RootStack>
