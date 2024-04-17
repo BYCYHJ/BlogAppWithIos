@@ -15,7 +15,7 @@ import Svg, { Path } from 'react-native-svg'
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field'
 import { useEffect } from 'react'
 import { EasyLoading, Loading } from './Loading'
-import { getPhoneTokenCode } from '../services/services'
+import { getPhoneTokenCode, setStorage, getStorage, getUserInfo, setUniqueUserInfo } from '../services/services'
 
 const { Value, Text: AnimatedText } = Animated
 
@@ -53,6 +53,12 @@ export default function LoginWithPhoneCode({ navigation }) {
   const [verificationCode, setVerificationCode] = useState('') //验证码
   const [timing, setTiming] = useState(30) //验证码按钮禁用秒数
   const [isPressed, setIsPressed] = useState(false) //是否点击了验证码按钮
+  const [userInfo, setUserInfo] = useState({
+    userName: "",
+    userId: "",
+    phoneNumber: "",
+    avatarUrl: "",
+  });//用户信息
 
   const [value, setValue] = useState('')
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT })
@@ -133,47 +139,25 @@ export default function LoginWithPhoneCode({ navigation }) {
     ]).start()
     SetCodeVisible(true)
 
-    // axios({
-    //   method: 'get',
-    //   url: 'http://47.109.141.21:5211/api/Login/GetPhoneTokenCode',
-    //   params: {
-    //     phone: UserName,
-    //   },
-    // })
-    //   .then(response => {
-    //     //请求验证码失败
-    //     if (response.status > 299) {
-    //       modalMsg.current = response.data;
-    //       setModalVisible(true);
-    //     }
-    //     //成功
-    //     modalMsg.current = '已发送验证码，请注意查收' + response.data;
-    //     setModalVisible(true);
-    //     setVerificationCode(response.data);
-    //   })
-    //   //发生错误
-    //   .catch(error => {
-    //     modalMsg.current = error.message;
-    //     setModalVisible(true);
-    //   });
-
     try {
       const params = {
         phone: UserName,
       }
       const { data, status } = await getPhoneTokenCode({ params })
+      console.log(status);
       //请求成功但服务器拒绝
       if (status > 299) {
-        modalMsg.current = data
-        setModalVisible(true)
+        modalMsg.current = data;
+        setModalVisible(true);
+      } else {
+        //成功
+        modalMsg.current = '已发送验证码，请注意查收' + data;
+        setModalVisible(true);
+        setVerificationCode(data);
       }
-      //成功
-      modalMsg.current = '已发送验证码，请注意查收' + data
-      setModalVisible(true)
-      setVerificationCode(data)
     } catch (error) {
       //未知错误
-      modalMsg.current = error.message
+      modalMsg.current = error.response.data
       setModalVisible(true)
     }
 
@@ -183,22 +167,32 @@ export default function LoginWithPhoneCode({ navigation }) {
     //navigationRef.navigate("Test");
   }
 
+  //获取并设置用户信息
+  const getAndSetUserInfo = async () => {
+    //获取用户信息
+    try {
+      const response = await getUserInfo();
+      const { data, status } = { data: response.data, status: response.status }
+      console.log(JSON.stringify(data));
+      //无异常
+      if (status < 299) {
+        //将用户信息存储
+        await setStorage('userInfo', JSON.stringify(data));
+        //赋值
+        setUserInfo(data);
+        setUniqueUserInfo(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   //电话号码转为1ab****cdef格式
   useEffect(() => {
     const headStr = UserName.slice(0, 3)
     const endStr = UserName.slice(-4)
     anonymousNum.current = '+86 ' + headStr + '****' + endStr
   }, [UserName])
-
-  //持久化存储
-  const setStorage = async (key, value) => {
-    await AsyncStorage.setItem(key, value)
-  }
-
-  //获取存储的值
-  const getStorage = async key => {
-    return await AsyncStorage.getItem(key)
-  }
 
   //验证码按钮禁用
   useEffect(() => {
@@ -222,15 +216,17 @@ export default function LoginWithPhoneCode({ navigation }) {
       EasyLoading.show() //loader
       axios({
         method: 'post',
-        url: 'http://47.109.141.21:5211/api/Login/LoginWithPhone',
+        url: 'http://132.232.108.176:5211/api/Login/LoginWithPhone',
         params: {
           phone: UserName,
           code: value
         }
       })
         .then(async response => {
-          //存储token
-          await setStorage('token', response.data)
+          // //存储token
+          await setStorage('token', response.data);
+          //获取user
+          await getAndSetUserInfo();
           EasyLoading.dismiss() //loader消失
           navigation.navigate('Home')
         })

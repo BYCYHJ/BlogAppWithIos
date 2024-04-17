@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios":{
-        "credentialsSource": "local",
+        "credentialsSource": "remote",
         "distribution":"internal"
       }
     },

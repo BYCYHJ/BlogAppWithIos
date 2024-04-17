@@ -1,11 +1,12 @@
 import { Chat, MessageType } from '@flyerhq/react-native-chat-ui';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { Avatar } from '@rneui/base';
+import getSharedConnection, { demapMsg, mapMsg } from '../services/connection';
 
-// For the testing purposes, you should probably use https://github.com/uuidjs/uuid
+
 const uuidv4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.floor(Math.random() * 16)
@@ -14,61 +15,76 @@ const uuidv4 = () => {
   })
 }
 
-const BlogChat = () => {
+const BlogChat = ({ navigation, route }) => {
   const AvatarImg = require("../screens/logo.png");
   const [messages, setMessages] = useState<MessageType.Any[]>([]);
   const turnMessages = useRef<MessageType.Any[]>([]);
   const user = {
-    id: '06c33e8b-e835-4736-80f4-63f44b66666c',
-    firstName: 'AnAn',
+    id: route.params.senderId,
+    firstName: route.params.senderName,
     lastName: '',
     imageUrl: 'https://i.postimg.cc/7br8STM5/logo2.png'
   };
   const user2 = {
-    id: '06c33e8b-e835-4736-80f4-63f44b66666a',
-    firstName: 'AnAn',
+    id: route.params.recipientId,
+    firstName: route.params.recipientName,
     lastName: '',
     imageUrl: 'https://i.postimg.cc/7br8STM5/logo2.png'
   }
 
-  const addMessage = (message:MessageType.Any) => {
-    setMessages(pre => [message, ...pre]);
+  const initialSignalR = async () => {
+    const connection = await getSharedConnection();
+    connection.on("ReceiveMessage", (message) => {
+      const parseMsg = JSON.parse(message);
+      const receiveMsg = mapMsg(parseMsg);
+      if (receiveMsg.type == 1) {
+        const newMsg: MessageType.Text = {
+          author: user.id == parseMsg.SenderId ? user : user2,
+          createdAt: parseMsg.SendTime,
+          text: parseMsg.SendMsg,
+          id: parseMsg.Id,
+          type: 'text'
+        };
+        addMessage(newMsg);
+      }
+    });
   }
-  // const addRefMsg = (message:MessageType.Any) => {
-  //   var a = turnMessages.current;
-  //   var b = message;
-  //   turnMessages.current = [...(turnMessages.current),message];
-  // }
 
-  const handleSendPress = (message: MessageType.PartialText) => {
-    const textMessage: MessageType.Text = {
-      author: user,
-      createdAt: Date.now(),
-      id: uuidv4(),
-      text: message.text,
-      type: 'text',
-    };
-    const textMessage2: MessageType.Text = {
-      author: user2,
-      createdAt: Date.now(),
-      id: uuidv4(),
-      text: message.text,
-      type: 'text',
-    }
-    // addRefMsg(textMessage);
-    // addRefMsg(textMessage2);
-    addMessage(textMessage);
-    setTimeout(() => {addMessage(textMessage2);},5000);
+  initialSignalR();
+
+  const addMessage = (message: MessageType.Any) => {
+    setMessages([message, ...messages]);
   }
+
+  //发送按钮，调用signalR的SendMessage方法
+  const handleSendPress = async (message) => {
+    const sendMsg = demapMsg(message, user.id, user2.id);//传入后端的msg
+    console.log("messageId:" + sendMsg.id);
+    var contentMsg: MessageType.Any;
+    if (message.type == 'text') {
+      contentMsg = {
+        author: user,
+        createdAt: Date.now(),
+        id: sendMsg.id,
+        text: message.text,
+        type: 'text',
+      };//前端展示的msg
+    }
+    addMessage(contentMsg);
+    const connection = await getSharedConnection();
+    connection.invoke("SendMessage", JSON.stringify(sendMsg));
+  }
+
+
 
   return (
     // Remove this provider if already registered elsewhere
     // or you have React Navigation set up
     <SafeAreaProvider>
       <View style={styles.TopHeader}>
-        <Entypo size={20} name="chevron-thin-left" style={[styles.HeaderContent,{ paddingLeft: 12, paddingRight: 20 }]} />
-        <Avatar rounded size={30} source={AvatarImg} containerStyle={{marginBottom:5 }}  avatarStyle={{ resizeMode: 'stretch', height: 30, width: 30}} />
-        <Text style={[styles.HeaderContent,{ fontSize: 18, paddingLeft: 15, width: global.windowSet.width * 0.4 }]}>jun_anananan</Text>
+        <Entypo size={20} name="chevron-thin-left" style={[styles.HeaderContent, { paddingLeft: 12, paddingRight: 20 }]} />
+        <Avatar rounded size={30} source={AvatarImg} containerStyle={{ marginBottom: 5 }} avatarStyle={{ resizeMode: 'stretch', height: 30, width: 30 }} />
+        <Text style={[styles.HeaderContent, { fontSize: 18, paddingLeft: 15, width: global.windowSet.width * 0.4 }]}>jun_anananan</Text>
       </View>
       <Chat
         showUserNames={true}
@@ -77,7 +93,6 @@ const BlogChat = () => {
         onSendPress={handleSendPress}
         onAttachmentPress={() => { }}
         user={user}
-
       />
     </SafeAreaProvider>
   )
@@ -96,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingTop: 20
   },
-  HeaderContent:{
-    paddingBottom:10
+  HeaderContent: {
+    paddingBottom: 10
   }
 });

@@ -3,8 +3,9 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/Login';
 import Home from './screens/Home';
-import { Animated, Dimensions, StyleSheet, Text, View, TouchableOpacity, Modal, Alert } from 'react-native';
 import ReadOnlyBlog from './screens/BlogDetail';
+import BlogChat from './screens/BlogChat';
+import BlogEditor from './screens/BlogEditor';
 
 export default function RootStack() {
     return (
@@ -18,6 +19,8 @@ export default function RootStack() {
                 <Stack.Screen name='Login' component={Login} />
                 <Stack.Screen name='Home' component={Home} />
                 <Stack.Screen name='Blog' component={ReadOnlyBlog} />
+                <Stack.Screen name="BlogChat" component={BlogChat} />
+                <Stack.Screen name="BlogEditor" component={BlogEditor}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

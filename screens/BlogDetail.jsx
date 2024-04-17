@@ -4,9 +4,15 @@ import { Dimensions, SafeAreaView, ScrollView, View, Text, StyleSheet, Touchable
 import RenderHtml from 'react-native-render-html';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { Avatar } from '@rneui/base';
+import { Avatar, Card } from '@rneui/base';
 import { ButtonText } from "@gluestack-ui/themed";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { GetChildrenComments, GetHighestComments, GetUniqueBlog } from "../services/services";
+import { Blog } from '../types/UserInfo';
+import AnimateIcon from "../components/AnimateIcon";
+import { FlatList } from "react-native";
+import { MyComment } from "../types/UserInfo";
+import LottieView from "lottie-react-native";
 
 
 const example = {
@@ -36,53 +42,168 @@ const example = {
 }
 
 const windowSet = Dimensions.get('window');
-const AnimatedAntdIcon = Animated.createAnimatedComponent(Icon);
 
-export default function ReadOnlyBlog(props) {
+export default function ReadOnlyBlog({ navigation, route }) {
     const AvatarImg = require("../screens/logo.png");
-    const heartOpacityAnim = useRef(new Animated.Value(0)).current;
-    const [heartName, setHeartName] = useState("hearto");
-    const [heartColor, setHeartColor] = useState("grey");
-    const [spinAnim, setSpinAnim] = useState(new Animated.Value(0));
-    const [iconPressed,setIconPressed] = useState(false);
-
-    //点击动画
-    const heartOpacity = heartOpacityAnim.interpolate({
-        inputRange: [0, 0.5, 1],
-        outputRange: [1, 0.5, 1],
-    });
-    const spin = spinAnim.interpolate({
-        inputRange: [0, 0.25, 0.5, 0.75, 1],
-        outputRange: ['0deg', '15deg', '0deg', '-15deg', '0deg'],
-    });
-
-    function pressHeartIcon(isPressed) {
-        Animated.parallel([
-            Animated.timing(heartOpacityAnim, {
-                toValue: isPressed ? 0 : 1,
-                duration: 300,
-                useNativeDriver: true,
-            }),
-            Animated.timing(spinAnim, {
-                toValue: isPressed ? 0 : 1,
-                duration: 300,
-                useNativeDriver: true,
-            }),
-        ]).start();
-        console.log('inner:'+isPressed);
-        setHeartName(isPressed ? 'heart' : 'hearto');
-        setHeartColor(isPressed ? '#FE007F' : 'grey');
+    const heartAnimate = require('../lottie/heartBeat.json');//喜欢点击动画
+    const starAnimate = require('../lottie/starBeat.json');//收藏点击动画
+    const user = {
+        userId: route.params.userId,
+        userName: route.params.userName,
+        avatarUrl: route.params.avatarUrl,
     };
+    const blog = {
+        id: route.params.blogId,
+        title: route.params.blogTitle,
+        content: route.params.blogContent
+    };
+    const [comments, setComments] = useState<Array<MyComment>>([]);
+    const highestPage = useRef(1);
+    const loadingAnimation = useRef(null);//加载评论时的动画
+    const [commentLoading,setCommentLoading] = useState(false);
 
+    //评论区
+    const CommentArea = () => {
+        const exampleComments = [{
+            id: '1',
+            Content: `太厉害了连续空间区域上的问题转化为在离散网格点上进行计算，从而更容易在计算机上实现数值求解。</div><div>差分格式方法有多种，如显式与隐式算法。显式算法相对简单，但有时为了满足计算稳定的条件，需要取很小的步`,
+            ParentId: '',
+            UserId: '',
+            UserName: 'AnAn',
+            AvatarUrl: '',
+            ChildrenComments: [{
+                id: '2',
+                Content: "什么很厉害吗?",
+                UserId: '',
+                UserName: 'BaiBai',
+                AvatarUrl: '',
+                ReplyName: "AnAn"
+            }, {
+                id: '4',
+                Content: "你很厉害咯?",
+                UserId: '',
+                UserName: 'Emo',
+                AvatarUrl: '',
+                ReplyName: "BaiBai"
+            },
+            ]
+        },
+        {
+            id: '3',
+            Content: "楼主很棒",
+            ParentId: '',
+            UserId: '',
+            UserName: '哈枇',
+            AvatarUrl: '',
+            ChildrenComments: []
+        }];
 
+        const commentsArea = ({ item }) => {
+            return (
+                <View style={{ paddingBottom: 30, alignItems: 'center', width: windowSet.width }}>
+                    <View style={{ flexDirection: 'row', width: windowSet.width }}>
+                        <Avatar size={36} rounded source={AvatarImg} containerStyle={{ marginLeft: 5 }} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
+                        <View style={{ paddingLeft: 10, justifyContent: 'center', width: windowSet.width * 0.72 }}>
+                            <Text style={{ fontSize: 13, fontWeight: '500', color: '#a9a9ab' }}>{item.userName}</Text>
+                            <Text style={{ lineHeight: 19, paddingTop: 5 }}>{item.content}</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-start', paddingTop: 5 }}>
+                                <Text style={{ lineHeight: 19, color: 'grey', fontSize: 13 }}>{item.publishDate}</Text>
+                                <Text style={{ lineHeight: 19, fontSize: 12 }}> 回复</Text>
+                            </View>
+                        </View>
+                        <View style={{ alignItems: 'flex-end', alignSelf: 'flex-start', width: windowSet.width * 0.1 }}>
+                            <View style={{ alignItems: 'center', paddingTop: 2 }}>
+                                <AnimateIcon lottiePath={heartAnimate} iconName="hearto" width={20} height={20} onCancle={() => { }} onPress={() => { }} />
+                                <Text>2</Text>
+                            </View>
+                        </View>
+                    </View>
+                    <View>
+                        <FlatList data={item.childrenComment} scrollEnabled={false} renderItem={({ item }) => {
+                            return (
+                                <View style={{ flexDirection: 'row', width: windowSet.width, paddingTop: 20 }}>
+                                    <Avatar size={36} rounded source={AvatarImg} containerStyle={{ marginLeft: 45 }} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
+                                    <View style={{ paddingLeft: 10, justifyContent: 'center', width: windowSet.width * 0.62 }}>
+                                        <Text style={{ fontSize: 13, fontWeight: '500', color: '#a9a9ab' }}>{item.userName}</Text>
+                                        <View style={{ flexDirection: 'row', paddingTop: 5, }}>
+                                            <Text style={{ lineHeight: 19, }}>
+                                                <Text style={{ lineHeight: 19 }}>回复 </Text>
+                                                <Text style={{ lineHeight: 19, color: '#c2c2c3', fontWeight: '500' }}>{item.replyUserName}</Text>：{item.content}
+                                            </Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', paddingTop: 5 }}>
+                                            <Text style={{ lineHeight: 19, color: 'grey', fontSize: 13 }}>{item.publishDate}</Text>
+                                            <Text style={{ lineHeight: 19, fontSize: 12 }}> 回复</Text>
+                                        </View>
+                                    </View>
+                                    <View style={{ alignItems: 'flex-end', alignSelf: 'flex-start', width: windowSet.width * 0.1 }}>
+                                        <View style={{ alignItems: 'center', paddingTop: 2 }}>
+                                            <AnimateIcon lottiePath={heartAnimate} iconName="hearto" width={20} height={20} onCancle={() => { }} onPress={() => { }} />
+                                            <Text>2</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            );
+                        }} />
+                        {/* 加载子评论按钮 */}
+                        <TouchableOpacity style={{ flexDirection: 'row', alignSelf: 'flex-start', width: windowSet.width, paddingLeft:50,justifyContent: 'flex-start', paddingTop: 10 }}
+                            onPress={() => getChildComments(item.id)}
+                        >
+                            <View style={{ display: !commentLoading ? 'flex' : 'none',flexDirection:'row',alignItems: 'center', }}>
+                                <Divider width={windowSet.width * 0.05} my='$0.5' backgroundColor="#f2f2f4" />
+                                <Text style={{ paddingLeft: 10, fontSize: 13, fontWeight: 'bold', color: 'grey' }}>展开评论</Text>
+                            </View>
+                            <View style={{ height: 10, width: windowSet.width - 100, alignItems: 'center', display: commentLoading ? 'flex' : 'none' }}>
+                                <LottieView
+                                    autoPlay={true}
+                                    loop={true}
+                                    ref={loadingAnimation}
+                                    style={{
+                                        width: 50, height: 50,
+                                        marginTop: -10, marginLeft: -windowSet.width / 2 + 70
+                                    }}
+                                    source={require("../lottie/loadComments.json")}
+                                />
+                            </View>
+                        </TouchableOpacity>
+                    </View >
+                    <Divider width={windowSet.width * 0.7} my='$0.5' marginTop={20} backgroundColor="#f2f2f4" />
+                </View >
+            );
+
+        }
+
+        return (
+            <View style={{ paddingTop: 30 }}>
+                <FlatList scrollEnabled={false} renderItem={commentsArea} data={comments} style={{ paddingTop: 10 }} />
+            </View>
+        );
+    }
+
+    useEffect(() => {
+        (async () => {
+            const { data, status } = await GetHighestComments(blog.id, highestPage.current, 5);
+            setComments(data.Data);
+        })();
+    }, []);
+
+    const getChildComments = async (commentId) => {
+        setCommentLoading(true);
+        const { data, status } = await GetChildrenComments(commentId, 1, 5);
+        const tempComments = [...comments];
+        const index = tempComments.findIndex(c => c.id == commentId);
+        tempComments[index].childrenComment = data.Data;
+        setComments(tempComments);
+        setCommentLoading(false);
+    }
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{ backgroundColor: 'white' }}>
             {/* Header */}
             <View style={{ height: 55, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 <Entypo size={20} name="chevron-thin-left" style={{ paddingLeft: 12, paddingRight: 20 }} />
                 <Avatar rounded size={30} source={AvatarImg} avatarStyle={{ resizeMode: 'stretch', height: 30, width: 30 }} />
-                <Text style={{ fontSize: 18, paddingLeft: 15, width: windowSet.width * 0.4 }}>jun_anananan</Text>
+                <Text style={{ fontSize: 18, paddingLeft: 15, width: windowSet.width * 0.4 }}>{user.userName}</Text>
                 <View style={{ width: windowSet.width * 0.3 }}>
                     <Button backgroundColor="transparent" borderColor="#e5e6e8" borderWidth={1} borderRadius={20} height={28} alignSelf="flex-end">
                         <ButtonText size='sm' color="#a5a7af">关注</ButtonText>
@@ -92,20 +213,44 @@ export default function ReadOnlyBlog(props) {
             {/* Content */}
             <ScrollView style={{ width: windowSet.width * 0.93, alignSelf: 'center', height: windowSet.height * 0.76 }} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
                 {/* BlogHeader:Title、Avatar */}
-                <View>
-                    <Avatar rounded size={60} source={AvatarImg} avatarStyle={{ resizeMode: 'stretch', height: 60, width: 60 }} />
+                {/* 标题 */}
+                <View style={{ paddingTop: 15, justifyContent: 'center', paddingBottom: 15 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 22 }}>{blog.title}</Text>
                 </View>
-                <RenderHtml contentWidth={windowSet.width * 0.9} source={example} tagsStyles={tagsStyles} />
+                {/* 用户信息 */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
+                    <Avatar rounded size={60} source={AvatarImg} avatarStyle={{ resizeMode: 'stretch', height: 60, width: 60 }} />
+                    <View style={{ paddingLeft: 5, justifyContent: 'space-between' }}>
+                        <Text style={{ fontWeight: 'bold', color: 'black' }}>{user.userName}</Text>
+                        <Text style={{ backgroundColor: "#ffede9", color: 'orangered', marginTop: 5, paddingLeft: 3, paddingRight: 3 }} >未知生物</Text>
+                    </View>
+                    <View style={{ width: windowSet.width * 0.57 }}>
+                        <Button backgroundColor="transparent" borderColor="orangered" borderWidth={1} borderRadius={20} height={28} alignSelf="flex-end">
+                            <ButtonText size='sm' color="orangered" >关注</ButtonText>
+                        </Button>
+                    </View>
+                </View>
+                <View style={{ height: 30 }} />
+                {/* 博客内容 */}
+                <RenderHtml contentWidth={windowSet.width * 0.9} source={{ html: blog.content }} tagsStyles={tagsStyles} />
                 <Text style={{ color: 'grey', alignSelf: 'center' }}>—— 2023-12-30 09:40:22 ——</Text>
                 <Divider my='$0.5' marginTop={20} backgroundColor="#f2f2f4" />
                 {/* Comments */}
                 <View>
-
+                    {/* 输入框 */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
+                        <Avatar rounded size={35} source={AvatarImg} containerStyle={{ marginLeft: 10 }} avatarStyle={{ resizeMode: 'stretch', height: 35, width: 35 }} />
+                        <View style={{ marginLeft: 20, height: 35, width: windowSet.width * 0.75, backgroundColor: '#f2f2f4', borderRadius: 20, justifyContent: 'center' }}>
+                            <Text style={{ color: '#c2c2c3', fontWeight: '500', paddingLeft: 15 }} >说点什么...</Text>
+                        </View>
+                    </View>
+                    <CommentArea />
                 </View>
             </ScrollView>
             <View style={{}}>
                 <Divider width={windowSet.width * 0.9} alignSelf="center" backgroundColor="#f2f2f4" />
                 <View style={{ height: windowSet.height * 0.08, backgroundColor: 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    {/* 评论输入框 */}
                     <TouchableOpacity style={styles.bottomReadOnlyInput}>
                         <View style={{
                             display: 'flex',
@@ -116,26 +261,19 @@ export default function ReadOnlyBlog(props) {
                             <Text style={styles.bottomInputText}>说点什么...</Text>
                         </View>
                     </TouchableOpacity>
+                    {/* 点赞、收藏、评论图标 */}
                     <View style={{ width: windowSet.width * 0.6 }}>
                         <View style={styles.allIconArea}>
-                            <TouchableOpacity activeOpacity={1} style={styles.bottomIconArea}
-                                onPress={() => {
-                                    setIconPressed(!iconPressed);
-                                    setIconPressed(preState => {
-                                        pressHeartIcon(preState);
-                                        return preState;
-                                    });
-                                    //pressHeartIcon();
-                                }}>
-                                <AnimatedAntdIcon size={27} name={heartName} color={heartColor} style={{ transform: [{ rotate: spin }], opacity: heartOpacity}}/>
-                                <Text style={styles.bottomIconText}>3万</Text>
-                            </TouchableOpacity>
                             <View style={styles.bottomIconArea}>
-                                <AnimatedAntdIcon name="star" color={'#ff8c00'} size={27}/>
+                                <AnimateIcon lottiePath={heartAnimate} iconName="hearto" width={30} height={30} onCancle={() => { }} onPress={() => { }} />
                                 <Text style={styles.bottomIconText}>1024</Text>
                             </View>
                             <View style={styles.bottomIconArea}>
-                                <Icon size={27} name="message1" color={'grey'} />
+                                <AnimateIcon lottiePath={starAnimate} iconName="staro" width={32} height={32} onCancle={() => { }} onPress={() => { }} />
+                                <Text style={styles.bottomIconText}>1024</Text>
+                            </View>
+                            <View style={styles.bottomIconArea}>
+                                <Icon size={27} name="message1" color={'black'} />
                                 <Text style={styles.bottomIconText}>50</Text>
                             </View>
                         </View>
@@ -161,6 +299,10 @@ const tagsStyles = {
         lineHeight: 25,
     },
     ol: {
+        fontSize: 16,
+        lineHeight: 25,
+    },
+    div: {
         fontSize: 16,
         lineHeight: 25,
     }
@@ -192,12 +334,21 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        paddingLeft: 15
+        paddingLeft: 15,
+        justifyContent: 'center'
     },
     bottomIconText: {
         fontSize: 15,
         fontWeight: '500',
         color: 'grey',
         paddingLeft: 4
-    }
+    },
+    card: {
+        borderRadius: 30,
+        width: windowSet.width * 0.95,
+        shadowOffset: { width: 1, height: 1 },
+        borderWidth: 1,
+        borderColor: '#eff0f1',
+        alignSelf: 'center'
+    },
 });
