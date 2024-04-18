@@ -9,7 +9,7 @@
 // } from 'react-native'
 // import { getColors } from 'react-native-image-colors'
 
-// const yunaUrl = 'https://i.imgur.com/68jyjZT.jpg'
+// const yunaUrl = 'http://132.232.108.176/test.png'
 // const catUrl = 'https://i.imgur.com/O3XSdU7.jpg'
 // const catImg = require('../sources/Bg1.jpg')
 
@@ -50,7 +50,8 @@
 //             colorThree: { value: result.primary, name: 'primary' },
 //             colorFour: { value: result.secondary, name: 'secondary' },
 //             rawResult: JSON.stringify(result),
-//           })
+//           });
+//           console.log(colors.colorOne.value)
 //           break
 //         default:
 //           throw new Error('Unexpected platform')
@@ -72,7 +73,7 @@
 
 //   return (
 //     <View style={styles.container}>
-//       <SafeAreaView style={styles.resultContainer}>
+//       <SafeAreaView >
 //         <Text style={styles.loading}>Result:</Text>
 //         <Text style={styles.result}>{colors.rawResult}</Text>
 //       </SafeAreaView>
@@ -134,15 +135,15 @@
 //     flexDirection: 'row',
 //     width: '100%',
 //   },
-//   resultContainer: {
-//     flex: 1,
-//     padding: 20,
-//     width: Platform.select({
-//       web: 'fill-available',
-//       ios: '100%',
-//       android: '100%',
-//     }),
-//   },
+// //   resultContainer: {
+// //     flex: 1,
+// //     padding: 20,
+// //     width: Platform.select({
+// //       web: 'fill-available',
+// //       ios: '100%',
+// //       android: '100%',
+// //     }),
+// //   },
 //   container: {
 //     flex: 1,
 //     justifyContent: 'center',
