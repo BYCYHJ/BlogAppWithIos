@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createContext, useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Text, TouchableOpacity, View, Animated } from 'react-native';
 import {
     AnimatedTabBarNavigator,
@@ -10,7 +10,7 @@ import styled from 'styled-components/native';
 import { NavigationContainer } from '@react-navigation/native';
 import BlogList from './BlogList';
 import MyInfo from './MyInfo';
-import { getUniqueUserInfo, setStorage,setUniqueUserInfo } from '../services/services';
+import { getUniqueUserInfo, setStorage, setUniqueUserInfo } from '../services/services';
 import ChatList from './ChatList';
 import SideMenu from '@rexovolt/react-native-side-menu';
 import UpdateAvatar from '../components/UpdateAvatar';
@@ -123,9 +123,9 @@ export default function Home({ navigation }) {
     return (
         <SideMenu menu={menu} overlayOpacity={0} animateOverlayOpacity={false} isOpen={showMenu} menuPosition='right' openMenuOffset={windowSet.width * 0.5} onChange={(isOpen) => CloseMenu(showMenu)} >
             <UpdateAvatar width={upAvatarWidth} height={upAvatarHeight}
-                url={userInfo.avatarUrl || userInfo.avatarUrl == "" ? avatarUrl : userInfo.avatarUrl}
+                url={userInfo|| userInfo.avatarUrl || userInfo.avatarUrl == "" ? avatarUrl : userInfo.avatarUrl}
                 display={showUpAvatar} pressClose={PressAvatarClose} />
-            <View style={{ display: showUpAvatar ? 'none' : 'flex',width:windowSet.width,height:windowSet.height }} >
+            <View style={{ display: showUpAvatar ? 'none' : 'flex', width: windowSet.width, height: windowSet.height }} >
                 <NavigationContainer independent={true}>
                     <Tabs.Navigator
                         initialRouteName="Home"

@@ -16,6 +16,7 @@ import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-
 import { useEffect } from 'react'
 import { EasyLoading, Loading } from './Loading'
 import { getPhoneTokenCode, setStorage, getStorage, getUserInfo, setUniqueUserInfo } from '../services/services'
+import { useUser } from '../UserContext'
 
 const { Value, Text: AnimatedText } = Animated
 
@@ -59,6 +60,7 @@ export default function LoginWithPhoneCode({ navigation }) {
     phoneNumber: "",
     avatarUrl: "",
   });//用户信息
+  const {user,setUser} = useUser();
 
   const [value, setValue] = useState('')
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT })
@@ -181,6 +183,7 @@ export default function LoginWithPhoneCode({ navigation }) {
         //赋值
         setUserInfo(data);
         setUniqueUserInfo(data);
+        setUser(data);
       }
     } catch (error) {
       console.log(error);

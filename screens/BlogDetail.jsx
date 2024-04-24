@@ -57,7 +57,7 @@ export default function ReadOnlyBlog({ navigation, route }) {
         title: route.params.blogTitle,
         content: route.params.blogContent
     };
-    const [comments, setComments] = useState<Array<MyComment>>([]);
+    const [comments, setComments] = useState([]);
     const highestPage = useRef(1);
     const loadingAnimation = useRef(null);//加载评论时的动画
     const [commentLoading,setCommentLoading] = useState(false);
@@ -183,6 +183,7 @@ export default function ReadOnlyBlog({ navigation, route }) {
     useEffect(() => {
         (async () => {
             const { data, status } = await GetHighestComments(blog.id, highestPage.current, 5);
+            console.log(data);
             setComments(data.Data);
         })();
     }, []);

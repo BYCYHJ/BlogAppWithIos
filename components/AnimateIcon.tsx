@@ -33,7 +33,7 @@ export default function AnimateIcon(props: AnimateIconProps) {
                 style={{
                     width: initialLottieSize * multiplier, height: initialLottieSize * multiplier,
                     backgroundColor: 'transparent', display: isPressed ? 'flex' : 'none',
-                    marginTop: initialMargin * multiplier, marginLeft: initialMargin * multiplier
+                    // marginTop: initialMargin * multiplier, marginLeft: initialMargin * multiplier
                 }}
                 source={props.lottiePath}
             />

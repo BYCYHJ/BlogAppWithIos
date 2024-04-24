@@ -36,6 +36,22 @@ export async function getUserInfo() {
   });
 }
 
+//根据id查找唯一用户
+export async function getUniqueUser(userId){
+  const token = await getStorage("token");
+  return axios({
+    method: 'post',
+    url: 'http://132.232.108.176:5211/api/Login/GetSingleUserInfo',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    params:{
+      userId:userId,
+    }
+  });
+}
+
 //发布博客
 export async function publishBlog(blog) {
   const token = await getStorage("token");

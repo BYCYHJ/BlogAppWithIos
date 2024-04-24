@@ -11,7 +11,7 @@ import DynamicMiniHead from '../components/DynamicMiniHead';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import { getColors } from 'react-native-image-colors';
+// import { getColors } from 'react-native-image-colors';
 
 const windowSet = Dimensions.get('window');
 const AnimatedSearchBar = Animated.createAnimatedComponent(SearchBar);
@@ -70,34 +70,8 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
     const AvatarImg = require("../screens/logo.png");
     const [colors, setColors] = useState(null);
     const backgroundImg = require('../sources/Bg1.jpg');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const yunaUrl = 'http://132.232.108.176/test.png';
-
-    useEffect(() => {
-        const fetchColors = async () => {
-            const result = await getColors(backgroundImg, {
-                fallback: '#000000',
-                pixelSpacing: 5,
-            })
-
-            switch (result.platform) {
-                case 'ios':
-                    setColors({
-                        colorOne: { value: result.background, name: 'background' },
-                        colorTwo: { value: result.detail, name: 'detail' },
-                        colorThree: { value: result.primary, name: 'primary' },
-                        colorFour: { value: result.secondary, name: 'secondary' },
-                        rawResult: JSON.stringify(result),
-                    });
-                    break
-                default:
-                    throw new Error('Unexpected platform')
-            }
-            setLoading(false);
-        }
-
-        fetchColors()
-    }, [])
 
 
     useEffect(() => {

@@ -71,19 +71,6 @@ const exampleData = [{
 export default function ChatList({ navigation, userInfo }) {
     const [haventReadList, setHaventReadList] = useState([]);
 
-    //连接signalR
-    // useEffect(() =>{
-    //     (async ()=>{
-    //         const connection = await signalRConnectionPromise();
-    //         connection.start();
-    //         //监听是否有未读消息
-    //         connection.on("getHaventRead",(sendersJson)=>{
-    //             const senders =  JSON.parse(sendersJson);
-    //             setHaventReadList(senders);
-    //             console.log(haventReadList[0]);
-    //         });
-    //     })();
-    // },[]);
     const initialSignalR = async () =>{
         const connection = await getSharedConnection();
         connection.start();

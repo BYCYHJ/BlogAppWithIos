@@ -96,6 +96,14 @@ function TabView1(props) {
             EasyLoading.show();
             try {
                 const { data, status } = await GetUniqueBlog(item.Id);
+                console.log({
+                    blogId: item.Id,
+                    blogTitle: item.Title,
+                    blogContent: data.Data.Content.replaceAll("preview_",""),
+                    userId: item.UserId,
+                    userName: item.UserName,
+                    avatarUrl: item.AvatarUrl
+                });
                 props.navigation.navigate("Blog", {
                     blogId: item.Id,
                     blogTitle: item.Title,
@@ -226,15 +234,6 @@ export default function BlogList({ navigation }) {
     }, []);
     const [searchVal, setSearchVal] = useState("");
     const windowSet = Dimensions.get('window');
-
-    const _renderScrollHeader = useCallback(() => {
-        return (
-            <View onLayout={headerOnLayout}>
-                <View style={{ backgroundColor: 'pink' }}>
-                </View>
-            </View>
-        );
-    }, []);
 
 
     return (
