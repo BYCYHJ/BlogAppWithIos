@@ -121,9 +121,17 @@ export default function Home({ navigation }) {
     }
     const menu = <Test />;
     return (
-        <SideMenu menu={menu} overlayOpacity={0} animateOverlayOpacity={false} isOpen={showMenu} menuPosition='right' openMenuOffset={windowSet.width * 0.5} onChange={(isOpen) => CloseMenu(showMenu)} >
+        <SideMenu menu={menu}
+            overlayOpacity={0}
+            animateOverlayOpacity={false}
+            isOpen={showMenu}
+            menuPosition='right'
+            openMenuOffset={windowSet.width * 0.5}
+            onChange={(isOpen) => CloseMenu(showMenu)}
+            disableGestures={true}
+        >
             <UpdateAvatar width={upAvatarWidth} height={upAvatarHeight}
-                url={userInfo|| userInfo.avatarUrl || userInfo.avatarUrl == "" ? avatarUrl : userInfo.avatarUrl}
+                url={userInfo || userInfo.avatarUrl || userInfo.avatarUrl == "" ? avatarUrl : userInfo.avatarUrl}
                 display={showUpAvatar} pressClose={PressAvatarClose} />
             <View style={{ display: showUpAvatar ? 'none' : 'flex', width: windowSet.width, height: windowSet.height }} >
                 <NavigationContainer independent={true}>

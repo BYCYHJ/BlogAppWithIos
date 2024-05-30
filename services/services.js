@@ -37,7 +37,7 @@ export async function getUserInfo() {
 }
 
 //根据id查找唯一用户
-export async function getUniqueUser(userId){
+export async function getUniqueUser(userId) {
   const token = await getStorage("token");
   return axios({
     method: 'post',
@@ -46,8 +46,8 @@ export async function getUniqueUser(userId){
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    params:{
-      userId:userId,
+    params: {
+      userId: userId,
     }
   });
 }
@@ -165,6 +165,72 @@ export async function GetChildrenComments(commentId, index, pageSize) {
     }
   });
 }
+
+//发表评论
+export async function PublishComment(content, blogId, userId, parentId = null, highestCommentId = null) {
+  const token = await getStorage("token");
+  return axios({
+    method: 'post',
+    url: 'http://192.168.2.117:5211/api/Comments/CreateComment',
+    data: {
+      content: content,
+      blogId: blogId,
+      userId: userId,
+      parentId: parentId,
+      highestCommentId: highestCommentId
+    },
+    headers: {
+      Authorization: "Bearer " + token,
+    }
+  });
+}
+
+//对评论标记为喜欢
+export async function AddCommentLike(commentId) {
+  const token = await getStorage("token");
+  return axios({
+    method: 'get',
+    url: 'http://192.168.2.117:5211/api/Comments/AddLike',
+    params: {
+      commentId: commentId,
+    },
+    headers: {
+      Authorization: "Bearer " + token,
+    }
+  });
+}
+
+//移除评论的喜欢标记
+export async function RemoveCommentLike(commentId) {
+  const token = await getStorage("token");
+  return axios({
+    method: 'get',
+    url: 'http://192.168.2.117:5211/api/Comments/RemoveLike',
+    params: {
+      commentId: commentId,
+    },
+    headers: {
+      Authorization: "Bearer " + token,
+    }
+  });
+}
+
+//获取获赞记录
+export async function GetAllPersonalNotification(index, pageSize) {
+  const token = await getStorage("token");
+  return axios({
+    method: 'get',
+    url: 'http://192.168.2.117:5211/api/Notification/GetAllPersonalNotification',
+    params: {
+      index: index,
+      pageSize: pageSize
+    },
+    headers: {
+      Authorization: "Bearer " + token,
+    }
+  });
+}
+
 
 //持久化存储
 export const setStorage = async (key, value) => {

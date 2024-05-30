@@ -9,7 +9,7 @@ import { GetRecommendBlogs, GetUniqueBlog } from '../services/services';
 import { Image, Skeleton } from '@rneui/base';
 import { AddIcon, Box, Fab, FabIcon, FabLabel, Spinner } from '@gluestack-ui/themed';
 import { Path, Svg } from 'react-native-svg';
-import { EasyLoading,Loading } from '../components/Loading';
+import { EasyLoading, Loading } from '../components/Loading';
 
 
 
@@ -27,39 +27,22 @@ function TabView1(props) {
         })();
     }, []);
 
-    const exampleBlog: Array<BlogInfo> = [{
-        Title: "深入了解React Native FlatList",
-        Content: "在data 道具中,你将输入你想显示的数组。这可以是来自API的JSON数据,keyExtractor 道具将为数组中的每个项目检索一个唯一的键注意,如果你的数组包含一个key 或id 字段,你不需要包括这个道具。默认情况下,FlatList 将寻找key 或id 属性"
-            + "renderItem 将告诉React Native如何渲染列表中的项目。",
-        Tags: ['All', 'React'],
-        stars: 2,
-        PreviewPhoto: "http://132.232.108.176/preview_19f926ac-ba39-455c-aa72-9b7dda6641b5.png"
-    },
-        // {
-        //     Title: "深入了解React Native FlatList2",
-        //     Content: "在data 道具中,你将输入你想显示的数组。这可以是来自API的JSON数据,如果你的数组包含一个key 或id 字段,你不需要包括这个道具。默认情况下,FlatList 将寻找key 或id 属性"
-        //         + "renderItem 将告诉React Native如何渲染列表中的项目。",
-        //     Tags: ['All', 'React', '.Net'],
-        //     stars: 0
-        // }
-    ];
-
     const reachEnd = async () => {
         setIsLoading(true);
         //如果条数本来就小于5条，不需要加载
-        if(!blogs){return;}
-        if(blogs.length <=5) return;
+        if (!blogs) { return; }
+        if (blogs.length <= 5) return;
         try {
             const response = await GetRecommendBlogs(page.current + 1, 5);
             const { data, status } = { data: response.data, status: response.status };
             console.log(data);
             if (status < 299) {
                 if (data.StatusCode >= 299) {
+                    page.current = page.current -1;//将页数恢复
                     return;
                 } else {
                     const blog = data.Data;
-                    setBlogs([...blog]);
-                    page.current + 1;
+                    setBlogs([...blogs,...blog]);
                 }
             }
         } catch (error) {
@@ -74,7 +57,6 @@ function TabView1(props) {
         try {
             const response = await GetRecommendBlogs(1, 5);
             const { data, status } = { data: response.data, status: response.status };
-            console.log(data);
             if (status < 299) {
                 if (data.StatusCode >= 299) {
                     setBlogs(undefined);
@@ -99,7 +81,7 @@ function TabView1(props) {
                 console.log({
                     blogId: item.Id,
                     blogTitle: item.Title,
-                    blogContent: data.Data.Content.replaceAll("preview_",""),
+                    blogContent: data.Data.Content.replaceAll("preview_", ""),
                     userId: item.UserId,
                     userName: item.UserName,
                     avatarUrl: item.AvatarUrl
@@ -107,7 +89,7 @@ function TabView1(props) {
                 props.navigation.navigate("Blog", {
                     blogId: item.Id,
                     blogTitle: item.Title,
-                    blogContent: data.Data.Content.replaceAll("preview_",""),
+                    blogContent: data.Data.Content.replaceAll("preview_", ""),
                     userId: item.UserId,
                     userName: item.UserName,
                     avatarUrl: item.AvatarUrl
@@ -129,12 +111,12 @@ function TabView1(props) {
                             <View style={{ display: 'flex', flexDirection: 'row', width: windowSet.width * 0.75 }}>
                                 <FlatList horizontal={true} data={item.Tags} style={{ height: 15, flexDirection: 'row-reverse' }}
                                     renderItem={({ item }) => {
-                                        const color = item == 1 ? '#66a1ff' : (item == '.Net' ? '#ff5819' : '#8566ff');
+                                        const color = item == 1 ? '#66a1ff' : (item == 2 ? '#ff5819' : '#8566ff');
                                         return (
                                             <View style={{ display: 'flex', flexDirection: 'row', height: 15 }}>
                                                 <View style={{ backgroundColor: color, borderRadius: 3, width: 35, alignItems: 'center' }}>
                                                     <ListItem.Title style={{ color: 'white', fontSize: 10, fontWeight: 'bold', lineHeight: 15 }}>
-                                                        {item}
+                                                        {item == 1 ? "All" : (item == 2 ? ".Net" : "JS")}
                                                     </ListItem.Title>
                                                 </View>
                                                 <View style={{ paddingLeft: 5 }} />
@@ -209,15 +191,15 @@ function TabView1(props) {
     }
 
     return (
-        <View style={{}}>
+        <ScrollView style={{}}>
             {blogs ? blogs?.length ?
-                <FlatList style={{}} data={blogs} renderItem={renderItem} />
-                : <FlatList onEndReached={reachEnd} data={waitingCount} renderItem={renderWaiting} />
+                <FlatList scrollEnabled={false} style={{}} data={blogs} renderItem={renderItem} />
+                : <FlatList scrollEnabled={false} onEndReached={reachEnd} data={waitingCount} renderItem={renderWaiting} />
                 : <Nodata />
             }
             <Spinner style={{ display: isloading ? 'flex' : 'none' }} color="grey" />
-            <Loading style={{ backgroundColor: 'transparent' }}/>
-        </View>
+            <Loading style={{ backgroundColor: 'transparent' }} />
+        </ScrollView>
     );
 }
 

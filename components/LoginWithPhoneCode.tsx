@@ -7,7 +7,7 @@ import CodeStyles, {
   NOT_EMPTY_CELL_BG_COLOR
 } from '../styles/PhoneCode'
 import { Input } from 'beeshell'
-import { Animated, Dimensions, StyleSheet, Text, View, TouchableOpacity, Modal, Alert } from 'react-native'
+import { Animated, Dimensions, StyleSheet, Text, View, TouchableOpacity, Modal, Alert, Image } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Animatable from 'react-native-animatable'
 import axios from 'axios'
@@ -17,10 +17,12 @@ import { useEffect } from 'react'
 import { EasyLoading, Loading } from './Loading'
 import { getPhoneTokenCode, setStorage, getStorage, getUserInfo, setUniqueUserInfo } from '../services/services'
 import { useUser } from '../UserContext'
+import { Divider } from '@rneui/base'
 
 const { Value, Text: AnimatedText } = Animated
 
 const CELL_COUNT = 6
+const windowSet = Dimensions.get('window');
 
 const animationsColor = [...new Array(CELL_COUNT)].map(() => new Value(0))
 const animationsScale = [...new Array(CELL_COUNT)].map(() => new Value(1))
@@ -45,7 +47,7 @@ export default function LoginWithPhoneCode({ navigation }) {
   const [UserName, SetUserName] = useState('') //用户名
   const [CodeVisible, SetCodeVisible] = useState(false) //code visible
   const [NumWarningVisible, SetNumWarningVisible] = useState(false)
-  const [LoginBackground, SetBackground] = useState('#ebcb22')
+  const [LoginBackground, SetBackground] = useState('#f1d28d');
   const phoneNumLocate = useRef(new Animated.ValueXY()).current //电话号码的坐标
   const [fontSize, setFontSize] = useState(new Animated.Value(18))
   const anonymousNum = useRef('') //电话号码 aaa****bbbb格式
@@ -60,7 +62,7 @@ export default function LoginWithPhoneCode({ navigation }) {
     phoneNumber: "",
     avatarUrl: "",
   });//用户信息
-  const {user,setUser} = useUser();
+  const { user, setUser } = useUser();
 
   const [value, setValue] = useState('')
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT })
@@ -207,7 +209,7 @@ export default function LoginWithPhoneCode({ navigation }) {
     }
     if (timing <= 0) {
       setTiming(30)
-      SetBackground('#ebcb22')
+      SetBackground('#f1d28d')
       setIsPressed(false)
     }
     return () => clearInterval(interval)
@@ -245,37 +247,51 @@ export default function LoginWithPhoneCode({ navigation }) {
   }, [value])
 
   return (
-    <View style={{ display: 'flex' }}>
-      <View style={{ marginTop: '20%' }}></View>
+    <View style={{
+      display: 'flex', height: !CodeVisible ? windowSet.height * 0.33 : windowSet.height * 0.45, backgroundColor: 'white', borderTopStartRadius: 20, borderTopEndRadius: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 10,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 4.22,
+    }}>
+      <Image style={{ width: windowSet.width * 0.45, height: windowSet.height * 0.05, marginTop: 30, marginLeft: 15, marginBottom: !CodeVisible ? windowSet.height * 0.04 : windowSet.height * 0.05 }} source={require('../sources/logo2.png')} />
       <Animated.View style={[styles.UsernameAPassword, { transform: [{ translateY: phoneNumLocate.y }] }]}>
         <View
           style={{
-            backgroundColor: '#050505',
             display: !CodeVisible ? 'flex' : 'none',
             flexDirection: 'row',
             height: 50,
-            width: '100%',
+            width: '95%',
             position: 'absolute',
-            top: 0
+            top: 0,
+            borderRadius: 20,
+            backgroundColor: '#fbf3e0',
+            alignSelf: 'center'
           }}
         >
-          <Svg style={styles.UAPSvg} viewBox="0 0 1024 1024" p-id="7972" width={30} height={30}>
-            <Path
-              d="M341.333333 298.666667a170.666667 170.666667 0 1 1 341.333334 0 170.666667 170.666667 0 0 1-341.333334 0z m170.666667 106.666666a106.666667 106.666667 0 1 0 0-213.333333 106.666667 106.666667 0 0 0 0 213.333333zM384 512a202.666667 202.666667 0 0 0-202.666667 202.666667v149.333333a32 32 0 0 0 64 0v-149.333333A138.666667 138.666667 0 0 1 384 576h256a138.666667 138.666667 0 0 1 138.666667 138.666667v149.333333a32 32 0 0 0 64 0v-149.333333A202.666667 202.666667 0 0 0 640 512H384z"
-              fill="#e2c85e"
-              p-id="7973"
-            ></Path>
-          </Svg>
+          <View style={{ width: '10%', height: '100%', alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}>
+            <Svg viewBox="0 0 1024 1024" p-id="7972" width={'80%'} height={'100%'}>
+              <Path
+                d="M341.333333 298.666667a170.666667 170.666667 0 1 1 341.333334 0 170.666667 170.666667 0 0 1-341.333334 0z m170.666667 106.666666a106.666667 106.666667 0 1 0 0-213.333333 106.666667 106.666667 0 0 0 0 213.333333zM384 512a202.666667 202.666667 0 0 0-202.666667 202.666667v149.333333a32 32 0 0 0 64 0v-149.333333A138.666667 138.666667 0 0 1 384 576h256a138.666667 138.666667 0 0 1 138.666667 138.666667v149.333333a32 32 0 0 0 64 0v-149.333333A202.666667 202.666667 0 0 0 640 512H384z"
+                fill="#e2c85e"
+                p-id="7973"
+              ></Path>
+            </Svg>
+          </View>
           <Input
             inputStyle={styles.UAPInputStyle}
             style={styles.UAPInput}
+
             placeholder="Phone Number"
             value={UserName}
             onChange={v => SetUserName(v)}
           ></Input>
         </View>
         <View style={{ position: 'absolute', top: 0, alignSelf: 'center', display: CodeVisible ? 'flex' : 'none' }}>
-          <AnimatedInput style={{ fontSize: fontSize, color: '#e6e6e6' }}>{anonymousNum.current}</AnimatedInput>
+          <AnimatedInput style={{ fontSize: fontSize, color: 'black' }}>{anonymousNum.current}</AnimatedInput>
         </View>
         <Text
           style={{
@@ -308,9 +324,9 @@ export default function LoginWithPhoneCode({ navigation }) {
         <TouchableOpacity
           disabled={isPressed}
           activeOpacity={0.8}
-          style={[styles.LoginButton]}
+          style={[styles.LoginButton, { marginTop: windowSet.height * 0.03 }]}
           onPressIn={() => SetBackground('grey')}
-          onPressOut={() => SetBackground('#edd038')}
+          onPressOut={() => SetBackground('#f1d28d')}
           onPress={getVerificationCode}
         >
           <View style={{ height: '100%', width: '80%', borderRadius: 30, backgroundColor: LoginBackground, alignSelf: 'center' }}>
@@ -346,9 +362,9 @@ const styles = StyleSheet.create({
     marginRight: 5
   },
   UAPInputStyle: {
-    color: '#dddddd',
+    color: 'black',
     fontSize: 24,
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
   UAPSvg: {
     width: '35%',
@@ -357,7 +373,7 @@ const styles = StyleSheet.create({
     marginTop: 7
   },
   BottomArea: {
-    marginTop: '10%',
+    //marginTop: '10%',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',

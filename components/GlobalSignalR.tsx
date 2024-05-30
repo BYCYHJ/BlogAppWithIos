@@ -41,9 +41,10 @@ export default function GlobalSignalR({ component }) {
             const msg = JSON.parse(notification);
             //推送消息
             schedulePushNotification({msg:msg.message});
-            console.log(msg);
         });
     }
+
+    initialSignalR();
 
     useEffect(() => {
         //无用户信息时直接返回不进行连接

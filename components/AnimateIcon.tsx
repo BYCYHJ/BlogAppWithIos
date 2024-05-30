@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GestureResponderEvent, TouchableOpacity } from "react-native";
 import LottieView from 'lottie-react-native';
 import Icon from 'react-native-vector-icons/AntDesign'
 
 export default function AnimateIcon(props: AnimateIconProps) {
-    const [isPressed, setIsPressed] = useState(false);
+    //const [isPressed, setIsPressed] = useState(false);
     const animation = useRef(null);
     const initialHeight = 30;
     const initialMargin = 16;
@@ -14,14 +14,20 @@ export default function AnimateIcon(props: AnimateIconProps) {
 
     const onPress = props.onPress;
 
+    useEffect(()=>{
+        if(props.isPressed){
+            animation.current?.play();
+        }
+    },[props.isPressed]);
+
     return (
         <TouchableOpacity onPress={() => {
-            if (!isPressed) {
+            if (!props.isPressed) {
                 props.onPress();
-            }else{
+            } else {
                 props.onCancle();
             }
-            setIsPressed(!isPressed);
+            props.setIsPressed(!props.isPressed);
             animation.current?.reset();
             animation.current?.play();
         }}
@@ -32,13 +38,13 @@ export default function AnimateIcon(props: AnimateIconProps) {
                 ref={animation}
                 style={{
                     width: initialLottieSize * multiplier, height: initialLottieSize * multiplier,
-                    backgroundColor: 'transparent', display: isPressed ? 'flex' : 'none',
+                    backgroundColor: 'transparent', display: props.isPressed ? 'flex' : 'none',
                     // marginTop: initialMargin * multiplier, marginLeft: initialMargin * multiplier
                 }}
                 source={props.lottiePath}
             />
             <Icon name={props.iconName} size={initialIconSize * multiplier} style={{
-                display: !isPressed ? 'flex' : 'none'
+                display: !props.isPressed ? 'flex' : 'none'
             }} />
         </TouchableOpacity >
     );
@@ -50,5 +56,7 @@ type AnimateIconProps = {
     iconName: string,
     lottiePath: string,
     onPress?: () => any,
-    onCancle?:()=>any
+    onCancle?: () => any,
+    isPressed: Boolean,
+    setIsPressed: (Boolean) => void,
 }

@@ -1,10 +1,11 @@
 import { Box, Text, Divider } from "@gluestack-ui/themed";
-import { Avatar, Badge } from "@rneui/base";
+import { Avatar, Badge, Button, ListItem } from "@rneui/base";
 import { FlashList } from "@shopify/flash-list";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import getSharedConnection from '../services/connection';
+import { ListItemContent } from "@rneui/base/dist/ListItem/ListItem.Content";
 
 const windowSet = Dimensions.get('window');
 
@@ -53,25 +54,25 @@ const topList = [{
     }
 }];
 
-const exampleData = [{
+let exampleData = [{
     avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
     userName: 'BaiBai',
-    userId: '3ca669c9-e901-4f54-af94-f12d49da8ecf',
+    userId: 'ce990000-9030-d493-a0ba-08dc5b9d3277',
     lastMsg: '记得早睡早起',
     lastDate: '03-05',
 },
 {
     avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
     userName: 'AnAn',
-    userId: 'd6a2126a-1a11-4c01-ada3-076d2be2a123',
+    userId: 'ce990000-9030-d493-fa3f-08dc5b9cbff4',
     lastMsg: '有龙则灵!🐉',
     lastDate: '03-05',
 }];
-
 export default function ChatList({ navigation, userInfo }) {
     const [haventReadList, setHaventReadList] = useState([]);
+    const [chatList, setChatList] = useState(exampleData);
 
-    const initialSignalR = async () =>{
+    const initialSignalR = async () => {
         const connection = await getSharedConnection();
         connection.start();
         connection.on("getHaventRead", (sendersJson) => {
@@ -82,27 +83,38 @@ export default function ChatList({ navigation, userInfo }) {
     }
     initialSignalR();
 
-    // const connection =  signalRconnection();
-    // connection.start();
-    // connection.invoke("BindUser",userInfo.userId);
-    // connection.on("getHaventRead", (sendersJson) => {
-    //     const senders = JSON.parse(sendersJson);
-    //     setHaventReadList(senders);
-    //     console.log(haventReadList[0]);
-    // });
+    //点击删除对话按钮
+    const pressDeleteChat = (userId) => {
+        console.log(userId);
+        const newList = chatList.filter((item) => {
+            return item.userId != userId;
+        });
+        console.log(newList);
+        setChatList([...newList]);
+    }
 
     const topToolList = ({ item }) => {
+        const onToolPress = () => {
+            switch (item.text) {
+                case '赞和收藏':
+                    navigation.navigate("LikeRecord");
+                    break;
+                default:
+                    break;
+            }
+        }
+
         return (
-            <Box alignItems="center" width={windowSet.width * 0.33} height={70}>
+            <TouchableOpacity onPress={onToolPress} style={{ alignItems: "center", width: windowSet.width * 0.33, height: 70 }}>
                 <Box backgroundColor={item.backgroundColor} width={48} height={48} borderRadius={17} justifyContent="center" alignItems="center">
                     <item.svgCode />
                 </Box>
                 <Text style={{ fontSize: 15, fontWeight: '600', paddingTop: 10 }}>{item.text}</Text>
-            </Box>
+            </TouchableOpacity>
         );
     }
 
-    const chatList = ({ item }) => {
+    const ChatList = ({ item }) => {
         //点击事件，跳转
         const onClickItem = () => {
             //移除未读状态
@@ -145,7 +157,30 @@ export default function ChatList({ navigation, userInfo }) {
                 </Box>
             </Box>
             <Box style={{ backgroundColor: 'white', height: windowSet.height * 0.64, paddingTop: 20 }}>
-                <FlashList data={exampleData} renderItem={chatList} estimatedItemSize={10}></FlashList>
+                {chatList.map((item, index) => (
+                    <ListItem.Swipeable rightWidth={90} style={{ height: 70, paddingBottom: 10, borderRadius: 0 }}
+                        rightContent={() => (
+                            <Button
+                                containerStyle={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    backgroundColor: "orangered",
+                                    borderRadius: 0
+                                }}
+                                type="clear"
+                                icon={{ name: "delete-outline", color: 'white' }}
+                                onPress={() => pressDeleteChat(item.userId)}
+                            />
+                        )}
+                        key={item.userId}
+                    >
+                        <ListItemContent style={{ justifyContent: 'center' }}>
+                            <ChatList item={item} />
+                        </ListItemContent>
+                    </ListItem.Swipeable>
+                ))
+                }
+                {/* <FlashList data={exampleData} renderItem={ChatList} estimatedItemSize={10}></FlashList> */}
             </Box>
         </View>
     );

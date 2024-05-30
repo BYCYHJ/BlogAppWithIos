@@ -1,9 +1,9 @@
-import { Dimensions } from "react-native";
+// import { Dimensions } from "react-native";
 
-global.gwidth = Dimensions.get('window').width;
-global.gheight = Dimensions.get('window').height;
+// global.gwidth = Dimensions.get('window').width;
+// global.gheight = Dimensions.get('window').height;
 
-global.windowSet={
-    height:gheight,
-    width:gwidth
-}
+// global.windowSet={
+//     height:gheight,
+//     width:gwidth
+// }

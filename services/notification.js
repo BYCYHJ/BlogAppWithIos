@@ -28,7 +28,7 @@ export default async function schedulePushNotification({msg}) {
     await Notifications.scheduleNotificationAsync({
         content: {
             title: "您有一条新消息 📬",
-            body: 'Here is the notification body',
+            body: msg,
             data: {data:msg},
         },
         trigger: { seconds: 1 }, // Schedule the notification after 2 seconds

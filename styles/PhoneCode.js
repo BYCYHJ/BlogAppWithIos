@@ -2,10 +2,10 @@ import {StyleSheet, Platform} from 'react-native';
 
 export const CELL_SIZE = 55;
 export const CELL_BORDER_RADIUS = 8;
-export const DEFAULT_CELL_BG_COLOR = '#050505';
-export const NOT_EMPTY_CELL_BG_COLOR = '#050505';
+export const DEFAULT_CELL_BG_COLOR = '#fbf2dd';
+export const NOT_EMPTY_CELL_BG_COLOR = '#fbf2dd';
 //export const ACTIVE_CELL_BG_COLOR = '#f7fafe';
-export const ACTIVE_CELL_BG_COLOR = 'black';
+export const ACTIVE_CELL_BG_COLOR = '#fefbf4';
 
 const styles = StyleSheet.create({
   codeFiledRoot: {
@@ -22,8 +22,9 @@ const styles = StyleSheet.create({
     fontSize: 30,
     textAlign: 'center',
     borderRadius: CELL_BORDER_RADIUS,
-    color: '#050505',
-    backgroundColor: '#050505',
+    color: '#fbf2dd',
+    backgroundColor: '#fbf2dd',
+
 
     // IOS
     shadowColor: '#000',
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
       height: 1,
     },
     shadowOpacity: 0.22,
-    shadowRadius: 2.22,
+    shadowRadius: 4.22,
 
     // Android
     elevation: 3,

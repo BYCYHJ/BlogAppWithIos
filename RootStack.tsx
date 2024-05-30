@@ -6,6 +6,8 @@ import Home from './screens/Home';
 import ReadOnlyBlog from './screens/BlogDetail';
 import BlogChat from './screens/BlogChat';
 import BlogEditor from './screens/BlogEditor';
+import LikeNotification from './screens/LikeNotification';
+import OtherInfo from './screens/OtherInfo';
 
 export default function RootStack() {
     return (
@@ -21,6 +23,8 @@ export default function RootStack() {
                 <Stack.Screen name='Blog' component={ReadOnlyBlog} />
                 <Stack.Screen name="BlogChat" component={BlogChat} />
                 <Stack.Screen name="BlogEditor" component={BlogEditor}/>
+                <Stack.Screen name ='LikeRecord' component={LikeNotification} />
+                <Stack.Screen name="OtherInfo" component={OtherInfo} />
             </Stack.Navigator>
         </NavigationContainer>
     );
