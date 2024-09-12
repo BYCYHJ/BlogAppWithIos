@@ -179,6 +179,7 @@ export default function BlogEditor() {
                             actions.setStrikethrough,
                             actions.setUnderline,
                             actions.insertImage,
+                            actions.code
                         ]}
                         style={styles.richToolBar}
                         onPressAddImage={async () => addImg()}

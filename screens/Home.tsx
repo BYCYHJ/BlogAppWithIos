@@ -6,7 +6,6 @@ import {
     TabElementDisplayOptions,
 } from 'react-native-animated-nav-tab-bar';
 import Icon from 'react-native-vector-icons/Feather';
-import styled from 'styled-components/native';
 import { NavigationContainer } from '@react-navigation/native';
 import BlogList from './BlogList';
 import MyInfo from './MyInfo';
@@ -19,13 +18,6 @@ import { UserInfo } from '../types/UserInfo';
 const windowSet = Dimensions.get('window');
 
 const Tabs = AnimatedTabBarNavigator();
-
-const Screen = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  background-color: #f2f2f2;
-`;
 
 const Logo = () => (
     <Image
@@ -144,7 +136,7 @@ export default function Home({ navigation }) {
                         }}
                         appearance={{
                             shadow: true,
-                            // floating: true,
+                            floating: false,
                             whenActiveShow: TabElementDisplayOptions.ICON_ONLY,
                             dotSize: DotSize.SMALL,
                         }}>

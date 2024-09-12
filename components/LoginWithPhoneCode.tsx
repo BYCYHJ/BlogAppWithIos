@@ -147,8 +147,7 @@ export default function LoginWithPhoneCode({ navigation }) {
       const params = {
         phone: UserName,
       }
-      const { data, status } = await getPhoneTokenCode({ params })
-      console.log(status);
+      const { data, status } = await getPhoneTokenCode({ params });
       //请求成功但服务器拒绝
       if (status > 299) {
         modalMsg.current = data;
@@ -221,13 +220,14 @@ export default function LoginWithPhoneCode({ navigation }) {
       EasyLoading.show() //loader
       axios({
         method: 'post',
-        url: 'http://132.232.108.176:5211/api/Login/LoginWithPhone',
+        url: 'http://132.232.108.176:5200/api/Login/LoginWithPhone',
         params: {
           phone: UserName,
           code: value
         }
       })
         .then(async response => {
+          console.log(response);
           // //存储token
           await setStorage('token', response.data);
           //获取user

@@ -1,6 +1,6 @@
 import { Icon } from '@rneui/base';
 import React, { useRef, useState } from 'react';
-import { View, Text, FlatList, Dimensions, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, FlatList, Dimensions, TouchableOpacity, Pressable,Image } from 'react-native';
 import { Tip, showTip } from 'react-native-tip';
 import OverlayButton from '../components/OverlayButton';
 import { Button, FeatureHighlight } from 'react-native-ui-lib';
@@ -12,10 +12,8 @@ export default function Test() {
 
     return (
         <View style={{ height: windowSet.height, justifyContent: 'center',alignItems:'center' }}>
-            <TouchableOpacity style={{width:200,height:100,backgroundColor:'red'}}>
-                <Text>aaa</Text>
-            </TouchableOpacity>
-            <OverlayButton/>
+            <Image style={{width:200,height:200}} resizeMode='stretch' source={{uri:'https://ananbaibai.cn/test.png'}} />
+            <Text>aaa</Text>
         </View>
     )
 }

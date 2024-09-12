@@ -1,8 +1,8 @@
 import { Box, Text, Divider } from "@gluestack-ui/themed";
-import { Avatar, Badge, Button, ListItem } from "@rneui/base";
+import { Avatar, Badge, Button, ListItem, Image } from "@rneui/base";
 import { FlashList } from "@shopify/flash-list";
 import React, { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import getSharedConnection from '../services/connection';
 import { ListItemContent } from "@rneui/base/dist/ListItem/ListItem.Content";
@@ -54,20 +54,37 @@ const topList = [{
     }
 }];
 
-let exampleData = [{
-    avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
-    userName: 'BaiBai',
-    userId: 'ce990000-9030-d493-a0ba-08dc5b9d3277',
-    lastMsg: '记得早睡早起',
-    lastDate: '03-05',
-},
-{
-    avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
-    userName: 'AnAn',
-    userId: 'ce990000-9030-d493-fa3f-08dc5b9cbff4',
-    lastMsg: '有龙则灵!🐉',
-    lastDate: '03-05',
-}];
+function EmptyChatList() {
+    return (
+        <View style={{ backgroundColor: 'white', height: windowSet.height * 0.65, alignItems: 'center' }}>
+            <Image resizeMode='center' style={{ width: 250, height: 250, marginTop: 100 }} width={250} height={250} source={require('../sources/22.png')} />
+            <Text style={{ fontWeight: 'bold', color: 'grey' }}>还木有对话哦(๑ּగ⌄ּగ๑)~</Text>
+        </View>
+    );
+}
+
+let exampleData = [
+    {
+        avatarUrl: require('../sources/Robert.png'),
+        userName: '智能助手',
+        userId: '0',
+        lastMsg: '欢迎提问',
+        lastDate: '09-05',
+    },
+    {
+        avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
+        userName: 'BaiBai',
+        userId: 'ce990000-9030-d493-a0ba-08dc5b9d3277',
+        lastMsg: '记得早睡早起',
+        lastDate: '03-05',
+    },
+    {
+        avatarUrl: 'https://i.postimg.cc/7br8STM5/logo2.png',
+        userName: 'AnAn',
+        userId: 'ce990000-9030-d493-fa3f-08dc5b9cbff4',
+        lastMsg: '有龙则灵!🐉',
+        lastDate: '03-05',
+    }];
 export default function ChatList({ navigation, userInfo }) {
     const [haventReadList, setHaventReadList] = useState([]);
     const [chatList, setChatList] = useState(exampleData);
@@ -85,7 +102,6 @@ export default function ChatList({ navigation, userInfo }) {
 
     //点击删除对话按钮
     const pressDeleteChat = (userId) => {
-        console.log(userId);
         const newList = chatList.filter((item) => {
             return item.userId != userId;
         });
@@ -117,6 +133,12 @@ export default function ChatList({ navigation, userInfo }) {
     const ChatList = ({ item }) => {
         //点击事件，跳转
         const onClickItem = () => {
+            //如果点击的为助手，则仅进行跳转操作
+            if (item.userId == '0') {
+                navigation.navigate('AIChat');
+                return;
+            }
+
             //移除未读状态
             const newList = haventReadList.filter(sender => sender != item.userId);
             setHaventReadList(newList);
@@ -133,22 +155,28 @@ export default function ChatList({ navigation, userInfo }) {
         }
         return (
             <TouchableOpacity style={{ height: 70, backgroundColor: "white", display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }} onPress={onClickItem}>
-                <Avatar size={50} rounded source={{ uri: item.avatarUrl }} />
+                {
+                    item.userId == '0' ?
+                        <Avatar size={50} rounded source={item.avatarUrl} avatarStyle={{ height: 50, width: 50, resizeMode: 'stretch' }} />
+                        : <Avatar size={50} rounded source={{ uri: item.avatarUrl }} />
+                }
                 <Badge status="error" containerStyle={{ position: 'absolute', top: 10, left: 45, display: haventReadList.includes(item.userId) ? 'flex' : 'none' }} />
                 <Box height={50} width={windowSet.width * 0.8} backgroundColor="white" marginLeft={10}>
                     <Box display="flex" flexDirection="row" height={'$1/2'} backgroundColor="white" alignItems="center">
                         <Text fontWeight="bold" fontSize={17} width={'$4/5'}>{item.userName}</Text>
                         <Text color="grey" fontSize={13}>{item.lastDate}</Text>
                     </Box>
-                    <Text color="grey" fontSize={15}>{item.lastMsg}</Text>
+                    <Text color="grey" fontSize={15} paddingTop={3}>{item.lastMsg}</Text>
                 </Box>
             </TouchableOpacity>
         );
     }
 
+    //height: windowSet.height * 0.25 height: windowSet.height * 0.64, 
+
     return (
-        <View>
-            <Box style={{ backgroundColor: 'white', height: windowSet.height * 0.25 }}>
+        <View style={{ height: windowSet.height }}>
+            <Box style={{ backgroundColor: 'white' }}>
                 <Box style={styles.topTextBox}>
                     <Text style={{ fontWeight: '600', alignSelf: 'center', lineHeight: 50 }}>消息</Text>
                 </Box>
@@ -156,32 +184,38 @@ export default function ChatList({ navigation, userInfo }) {
                     <FlashList estimatedItemSize={3} data={topList} renderItem={topToolList} numColumns={3}></FlashList>
                 </Box>
             </Box>
-            <Box style={{ backgroundColor: 'white', height: windowSet.height * 0.64, paddingTop: 20 }}>
-                {chatList.map((item, index) => (
-                    <ListItem.Swipeable rightWidth={90} style={{ height: 70, paddingBottom: 10, borderRadius: 0 }}
-                        rightContent={() => (
-                            <Button
-                                containerStyle={{
-                                    flex: 1,
-                                    justifyContent: "center",
-                                    backgroundColor: "orangered",
-                                    borderRadius: 0
-                                }}
-                                type="clear"
-                                icon={{ name: "delete-outline", color: 'white' }}
-                                onPress={() => pressDeleteChat(item.userId)}
-                            />
-                        )}
-                        key={item.userId}
-                    >
-                        <ListItemContent style={{ justifyContent: 'center' }}>
-                            <ChatList item={item} />
-                        </ListItemContent>
-                    </ListItem.Swipeable>
-                ))
+            <ScrollView style={{ backgroundColor: 'white' }}>
+                {
+                    chatList.length > 0 ?
+                        <Box>
+                            {chatList.map((item, index) => (
+                                <ListItem.Swipeable rightWidth={90} style={{ height: 70, paddingBottom: 10, borderRadius: 0 }}
+                                    rightContent={() => (
+                                        <Button
+                                            containerStyle={{
+                                                flex: 1,
+                                                justifyContent: "center",
+                                                backgroundColor: "orangered",
+                                                borderRadius: 0
+                                            }}
+                                            type="clear"
+                                            icon={{ name: "delete-outline", color: 'white' }}
+                                            onPress={() => pressDeleteChat(item.userId)}
+                                        />
+                                    )}
+                                    key={item.userId}
+                                >
+                                    <ListItemContent style={{ justifyContent: 'center' }}>
+                                        <ChatList item={item} />
+                                    </ListItemContent>
+                                </ListItem.Swipeable>
+                            ))
+                            }
+                            {/* <FlashList data={exampleData} renderItem={ChatList} estimatedItemSize={10}></FlashList> */}
+                        </Box>
+                        : <EmptyChatList />
                 }
-                {/* <FlashList data={exampleData} renderItem={ChatList} estimatedItemSize={10}></FlashList> */}
-            </Box>
+            </ScrollView>
         </View>
     );
 }

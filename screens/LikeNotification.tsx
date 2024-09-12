@@ -108,7 +108,11 @@ export default function LikeNotification({navigation}) {
     const RecordRender = ({ item }) => {
         //点击头像跳转
         const pressAvatar = () =>{
-            navigation.navigate("OtherInfo");
+            navigation.navigate("OtherInfo",{
+                userId:item.SubscriberId,
+                userName:item.SubscriberName,
+                avatarUrl:item.AvatarUrl
+            });
         }
 
         return (

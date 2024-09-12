@@ -11,11 +11,11 @@ import Svg, { Path } from "react-native-svg";
 import TextAreaResizable from 'react-native-textarea-resizable'
 import CommentEditor from "./CommentEditor";
 import CommentList from "./CommentList";
+import { GetHighestComments } from "../services/services";
 
 
 const windowSet = Dimensions.get('window');
 const example = [];
-// const exampleComments = [{
 //     id: '1',
 //     content: `太厉害了连续空间区域上的问题转化为在离散网格点上进行计算，从而更容易在计算机上实现数值求解。</div><div>差分格式方法有多种，如显式与隐式算法。显式算法相对简单，但有时为了满足计算稳定的条件，需要取很小的步`,
 //     ParentId: '',
@@ -90,18 +90,44 @@ export default function Comments(props: commentProps) {
     const highestCommentId = useRef("");
     const [commentEditorVisible, setEditorVisible] = useState(false);//输入评论组件可见性
     const editorValue = React.createRef();
-    const [comments, setComments] = useState([...props.data]);
-    const [newData, setNewData] = useState<comment|undefined|null>();//新评论
+    const [comments, setComments] = useState([]);
+    const [newData, setNewData] = useState<comment | undefined | null>();//新评论
+    const commentPage = useRef(1);
+    const [isLoadMore, setIsLoadMore] = useState(true);
 
+    //初始化第一批评论
     useEffect(() => {
-        setComments(props.data);
-    }, [props.data]);
+        (async () => {
+            const { data, status } = await GetHighestComments(props.blogId, commentPage.current, 5);
+            if (status < 299) {
+                setComments([...data.Data]);
+                commentPage.current = ++commentPage.current;
+            }
+        })();
+    }, []);
 
     useEffect(() => {
         if (newData != undefined && newData != null && newData.highestCommentId == "") {
             setComments([...comments, newData]);
+            setEditorVisible(false);
         }
-    }, [newData])
+    }, [newData]);
+
+    //获取更多评论
+    const getMoreComments = async () => {
+        console.log("get More");
+        console.log(commentPage.current);
+        if (isLoadMore) {
+            const { data, status } = await GetHighestComments(props.blogId, commentPage.current, 5);
+            if (status < 299) {
+                if (data.Data.length < 5) {
+                    setIsLoadMore(false);
+                }
+                setComments([...comments, ...data.Data]);
+                commentPage.current = ++commentPage.current;
+            }
+        }
+    }
 
     return (
         <Overlay
@@ -129,8 +155,8 @@ export default function Comments(props: commentProps) {
                             </View>
                         </TouchableOpacity>
                         :
-                        <CommentListMemo commentEditorHeight={commentEditorHeight} replyName={replyName} highestCommentId={highestCommentId}
-                            replyId={replyId} data={comments} setVisible={() => { setEditorVisible(true); }} replyCommentId={replyCommentId} newData={newData}
+                        <CommentListMemo getMoreFuc={async () => { await getMoreComments(); }} data={comments} commentEditorHeight={commentEditorHeight} replyName={replyName} highestCommentId={highestCommentId}
+                            replyId={replyId} setVisible={() => { setEditorVisible(true); }} replyCommentId={replyCommentId} newData={newData}
                         />
                 }
                 <FakeEditor commentEditorVisible={commentEditorVisible} commentEditorHeight={commentEditorHeight}
@@ -187,8 +213,7 @@ type commentProps = {
     visibale: boolean,
     onHide: () => void,
     height: SharedValue<number>,
-    data: Array<object>,
-    blogId?: string
+    blogId: string
 }
 
 type comment = {

@@ -1,4 +1,4 @@
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import {HttpTransportType, HubConnectionBuilder} from '@microsoft/signalr';
 import { getStorage } from './services';
 import { v4 as uuidv4 } from 'uuid';
 import 'react-native-get-random-values';
@@ -12,7 +12,10 @@ export default getSharedConnection = async () => {
         const user = await getStorage('userInfo'); // 从 AsyncStorage 获取 userId
         const userId = JSON.parse(user).userId;
         signalRConnection = new HubConnectionBuilder()
-            .withUrl("http://192.168.2.117:5213/messageHub?userId=" + userId)
+            .withUrl("http://192.168.2.117:5046/messageHub?userId=" + userId,{
+                skipNegotiation:true,
+                transport:HttpTransportType.WebSockets
+            })
             .withAutomaticReconnect()
             .build();
     }

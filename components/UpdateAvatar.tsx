@@ -39,8 +39,6 @@ export default function UpdateAvatar(props: AvatarAnimated) {
             const { data, status } = await photoUploadToServer({ base64Str: result.assets[0].base64 });
             if (status < 299) {
                 //更新头像为新头像
-                // const uriParts = data.split("/");
-                // const uri = uriParts[uriParts.length - 1];
                 setAvatarUrl({ uri: data });
                 //更新userInfo
                 const userInfo = getUniqueUserInfo();

@@ -7,7 +7,7 @@ import { Dialog, PanningProvider, StackAggregator, Text, FeatureHighlight } from
 import React from "react";
 import AnimateIcon from "./AnimateIcon";
 import Entypo from 'react-native-vector-icons/Entypo';
-import { AddCommentLike, GetChildrenComments, PublishComment, RemoveCommentLike } from "../services/services";
+import { AddCommentLike, GetChildrenComments, GetHighestComments, PublishComment, RemoveCommentLike } from "../services/services";
 import LottieView from "lottie-react-native";
 
 const AvatarImg = require("../screens/logo.png");
@@ -15,13 +15,13 @@ const heartAnimate = require('../lottie/heartBeat.json');//喜欢点击动画
 
 const windowSet = Dimensions.get('screen');
 
-function CommentList({ data, replyName, replyId, setVisible, commentEditorHeight, replyCommentId, highestCommentId, newData }) {
+function CommentList({ data, getMoreFuc, replyName, replyId, setVisible, commentEditorHeight, replyCommentId, highestCommentId, newData }) {
 
     return (
         <FlatList
-            //extraData={data}
+            onEndReached={() => { getMoreFuc(); }}
             scrollEnabled={true}
-            keyExtractor={item => item.id}
+            // keyExtractor={item => item.id}
             style={{ width: windowSet.width, paddingTop: 15, maxHeight: windowSet.height * 0.55 }}
             renderItem={object => <HighestComment item={object.item} replyName={replyName} replyId={replyId} setVisible={setVisible}
                 commentEditorHeight={commentEditorHeight} replyCommentId={replyCommentId} highestCommentId={highestCommentId} newData={newData}
@@ -141,7 +141,7 @@ function HighestComment({ item, replyName, replyId, setVisible, commentEditorHei
     return (
         <TouchableOpacity style={{ paddingTop: 20 }} onPress={() => { replyComment(); }}>
             <View style={{ flexDirection: 'row', width: windowSet.width }}>
-                <Avatar size={36} rounded source={AvatarImg} containerStyle={{ marginLeft: 10 }} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
+                <Avatar size={36} rounded source={{uri:item.avatarUrl}} containerStyle={{ marginLeft: 10 }} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
                 <View style={{ paddingLeft: 10, justifyContent: 'center', width: windowSet.width * 0.72 }}>
                     <Text style={{ fontSize: 13, fontWeight: '500', color: '#a9a9ab' }}>{item.userName}</Text>
                     <Text style={{ lineHeight: 19, paddingTop: 5 }}>{item.content}</Text>
@@ -264,7 +264,7 @@ const Children = ({ item, setVisible, replyId, replyName, replyCommentId, highes
                 pressChild();
             }}
         >
-            <Avatar size={30} rounded source={AvatarImg} containerStyle={{}} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
+            <Avatar size={30} rounded source={{uri:item.avatarUrl}} containerStyle={{}} avatarStyle={{ resizeMode: 'stretch', height: 45, width: 45 }} />
             <View style={{ paddingLeft: 10, justifyContent: 'center', width: windowSet.width * 0.62 }}>
                 <Text style={{ fontSize: 13, fontWeight: '500', color: '#a9a9ab' }}>{item.userName}</Text>
                 <View style={{ flexDirection: 'row', paddingTop: 5, }}>

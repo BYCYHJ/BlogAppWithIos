@@ -12,11 +12,12 @@ const windowSet = Dimensions.get('window');
 
 function CommentEditor(props: commentEditorProps, ref) {
     const textValue = useRef("");
-    const inputRef = React.createRef<Input>();
+    const inputRef = useRef();
 
     useEffect(() => {
         if (props.visible == true) {
             inputRef.current.focus();
+            console.log(inputRef.current);
         } else {
             Keyboard.dismiss();
         }
@@ -32,6 +33,7 @@ function CommentEditor(props: commentEditorProps, ref) {
         if (status <= 299) {
             //将新评论加入列表中
             props.setNewData(data.Data);
+            Keyboard.dismiss();
         }
     }
 

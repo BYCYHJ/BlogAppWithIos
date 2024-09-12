@@ -3,65 +3,113 @@ import DynamicHeader from '../components/DynamicHeader';
 import { SafeAreaView, ScrollView, View, Animated, StyleSheet, Dimensions, Image, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 import { Box, VStack, HStack, Heading, Text, Link, Button, ButtonText } from '@gluestack-ui/themed';
-import { Avatar, SearchBar } from '@rneui/themed';
+import { Avatar, SearchBar, Skeleton } from '@rneui/themed';
 import AntdIcon from 'react-native-vector-icons/AntDesign';
 import * as Animatable from 'react-native-animatable';
-import { getUniqueUserInfo } from '../services/services';
+import { GetPersonalBlogs, getUniqueUser, getUniqueUserInfo } from '../services/services';
 import DynamicMiniHead from '../components/DynamicMiniHead';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-// import { getColors } from 'react-native-image-colors';
+import { UserInfo } from '../types/UserInfo';
+import LottieView from 'lottie-react-native';
 
 const windowSet = Dimensions.get('window');
 const AnimatedSearchBar = Animated.createAnimatedComponent(SearchBar);
 
-function MyCollection(props) {
 
-    const renderItem = ({ item }) => {
-        return (
-            <Box
-                width={windowSet.width * 0.48}
-                // maxWidth="$64"
-                borderColor="#fffff5"
-                borderRadius="$lg"
-                borderWidth="$1"
-                my="$4"
-                overflow="hidden"
-                $base-mx="$1"
-            >
-                <Box>
-                    <Image
-                        source={require('./logo.png')}
-                        resizeMode='stretch'
-                        style={{ height: 180, width: windowSet.width * 0.48 }}
-                    />
-                </Box>
-                <VStack style={{ width: '100%' }}>
-                    <Text $dark-color="$textLight200" fontSize="$sm" my="$1.5" width={windowSet.width * 0.45} paddingLeft={5}>
-                        August 16, 2023
-                    </Text>
-                    <Heading $dark-color="$textLight200" size="sm" width={windowSet.width * 0.45} alignSelf='center'>
-                        {item.title}
-                    </Heading>
-                    <Text my="$1.5" $dark-color="$textLight200" fontSize="$xs" width={windowSet.width * 0.45} alignSelf='center'>
-                        {item.content.length > 50 ? item.content.slice(0, 49) + "..." : item.content}
-                    </Text>
-                    <Link href="https://gluestack.io/" isExternal>
-                        <Text fontSize="$sm" color="$pink600" alignSelf='center' paddingRight={5}>
-                            Find out more
-                        </Text>
-                    </Link>
-                </VStack>
-            </Box>
-        );
-    };
+function EmptyScreen() {
+    const animateRef = useRef(null);
 
-    return (<FlatList data={exampleBlog} numColumns={2} renderItem={renderItem} scrollEnabled={false} />);
+    return (
+        <View style={{ alignItems: 'center', justifyContent: 'center', width: windowSet.width, height: 400 }}>
+            <LottieView
+                autoPlay={true}
+                loop={true}
+                style={{ width: 200, height: 200 }}
+                source={require("../lottie/booking.json")}
+            />
+            <Text style={{ paddingTop: 20, fontWeight: '500' }}>TA暂时没有笔记哦&nbsp;&nbsp; 👀</Text>
+        </View>
+    );
 
 }
 
-export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
+
+function Blogs({ item }) {
+    const [imageLoading, setImageLoading] = useState(true);
+
+    return (
+        <Box
+            width={windowSet.width * 0.48}
+            // maxWidth="$64"
+            borderColor="#fffff5"
+            borderRadius="$lg"
+            borderWidth="$1"
+            my="$4"
+            overflow="hidden"
+            $base-mx="$1"
+        >
+            <Box>
+                <Skeleton style={{ height: 180, width: windowSet.width * 0.48, position: 'absolute', zIndex: 2, direction: 'ltr', display: imageLoading ? 'flex' : 'none' }} />
+                <Image
+                    onLoad={() => { setImageLoading(false) }}
+                    source={item.PreviewStr ? { uri: item.PreviewStr } : require('./logo.png')}
+                    resizeMode='stretch'
+                    style={{ height: 180, width: windowSet.width * 0.48 }}
+                />
+            </Box>
+            <VStack style={{ width: '100%' }}>
+                <Text $dark-color="$textLight200" fontSize="$sm" my="$1.5" width={windowSet.width * 0.45} paddingLeft={5}>
+                    {item.TimeString}
+                </Text>
+                <Heading $dark-color="$textLight200" size="sm" width={windowSet.width * 0.45} alignSelf='center'>
+                    {item.Title}
+                </Heading>
+                <Text my="$1.5" $dark-color="$textLight200" fontSize="$xs" width={windowSet.width * 0.45} alignSelf='center'>
+                    {item.Content.length > 50 ? item.Content + "..." : item.Content}
+                </Text>
+                {/* <Link href="https://gluestack.io/" isExternal> */}
+                <Text fontSize="$sm" color="$pink600" alignSelf='center' paddingRight={5}>
+                    See it more
+                </Text>
+                {/* </Link> */}
+            </VStack>
+        </Box>
+    );
+}
+
+function MyCollection({ userId }) {
+    const [blogs, setBlogs] = useState<Array<BlogInfo>>([]);
+
+    useEffect(() => {
+        (async () => {
+            //获取该用户的博客
+            const blogResponse = await GetPersonalBlogs(userId, 1, 4);
+            const blogStatus = blogResponse.status;
+            if (blogStatus > 299) { return; }
+            setBlogs(blogResponse.data.Data);
+        })();
+    }, []);
+
+    return (
+        <View>
+            {
+                blogs.length == 0 ?
+                    <EmptyScreen /> :
+                    <View>
+                        <FlatList data={blogs} numColumns={2} renderItem={object => <Blogs item={object.item} />} scrollEnabled={false} />
+                        <Text style={{ alignSelf: 'center', color: '#c4c5cb', fontWeight: 'bold' }}>已经到底啦~</Text>
+                        <View style={{ height: 120 }} />
+                    </View>
+            }
+        </View>
+    );
+
+}
+
+export default function OtherInfo({ navigation, route }) {
+    const userId = route.params.userId;
     const scrollOffsetY = useRef(new Animated.Value(0)).current;
     const searchBarWidth = useRef(new Animated.Value(10)).current;
     const [searchVal, setSearchVal] = useState("");
@@ -72,11 +120,22 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
     const backgroundImg = require('../sources/Bg1.jpg');
     const [loading, setLoading] = useState(false);
     const yunaUrl = 'http://132.232.108.176/test.png';
+    const [targetUserInfo, setTargetUserInfo] = useState<UserInfo>({ userId: route.params.userId, userName: route.params.userName, avatarUrl: route.params.avatarUrl });
 
 
     useEffect(() => {
-        console.log(colors);
-    }, [colors]);
+        (async () => {
+            //获取用户信息
+            const { data, status } = await getUniqueUser(userId);
+            if (status > 299) { return; }
+            setTargetUserInfo({
+                userId: data.Data.id,
+                userName: data.Data.userName,
+                avatarUrl: data.Data.avatarUrl
+            });
+            console.log(data.Data);
+        })();
+    }, [userId]);
 
 
 
@@ -93,10 +152,8 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
     const InfoHeader = () => {
 
         return (
-            // <View style={{ height: 350,backgroundColor:'transparent'}}>
-            /* <LinearGradient colors={['#424a73', '#64677d', '#707381']} style={{ height: 350 }} > */
-            < ImageBackground source={backgroundImg} style={{ height: 370}}>
-                <LinearGradient colors={loading ? ["grey", "white"] : ['rgba(22,22,22,0.9)','rgba(111,111,111,0.2)']} style={{height:370}} start={{x:1,y:1}} end={{x:1,y:0}} >
+            <ImageBackground source={backgroundImg} style={{ height: 420 }}>
+                <LinearGradient colors={loading ? ["grey", "white"] : ['rgba(22,22,22,0.9)', 'rgba(111,111,111,0.2)']} style={{ height: 420 }} start={{ x: 1, y: 1 }} end={{ x: 1, y: 0 }} >
                     <View style={{ height: 60 }} />
                     {/* 返回按钮 */}
                     <View style={{ height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -105,16 +162,22 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
                     </View>
                     {/* 头像及用户信息 */}
                     <View style={{ display: 'flex', flexDirection: 'row' }}>
-                        <View style={{ width: 20 }} />
-                        <Avatar rounded size={80} source={AvatarImg} avatarStyle={{ resizeMode: 'stretch', height: 80, width: 80 }} onPress={pressAvatar} />
-                        <View style={{ paddingLeft: 20, paddingTop: 25 }}>
-                            <Text style={{ color: 'white', fontWeight: '600', fontSize: 25 }}>AnAn</Text>
-                            <Text style={{ color: '#c4c5cb', paddingTop: 10, fontSize: 12, width: 200 }}>用户id: 0001-0001-0001-0001 🪧</Text>
+                        <View style={{ flex: 1 }} />
+                        <View style={{ flex: 5,justifyContent:'center' }}>
+                            <Avatar rounded size={80} source={AvatarImg} avatarStyle={{ resizeMode: 'stretch', height: 80, width: 80 }} />
+                        </View>
+                        <View style={{ paddingLeft: 20, flex: 16,justifyContent:'center' }}>
+                            <Text style={{ color: 'white', fontWeight: '600', fontSize: 25 }}>
+                                {targetUserInfo.userName ? targetUserInfo.userName : ""}
+                            </Text>
+                            <Text style={{ color: '#c4c5cb', paddingTop: 10, fontSize: 12,width:280 }}>
+                                用户id: {userId} <Ionicons name="qr-code" size={10} />
+                            </Text>
                         </View>
                     </View>
                     {/* 关注、粉丝、获赞及关注按钮、聊天按钮 */}
-                    <View style={{ paddingTop: 10, paddingLeft: 25 }}>
-                        <Text style={{ color: 'white', width: windowSet.width * 0.84, maxHeight: 80, height: windowSet.height * 0.08 }}>For the sake of that distant place, you have to work hard.</Text>
+                    <View style={{ paddingTop: 25, paddingLeft: 25 }}>
+                        <Text style={{ color: 'white', width: windowSet.width * 0.84, maxHeight: 80, height: 80 }}>For the sake of that distant place, you have to work hard.</Text>
                         <View style={{ display: 'flex', flexDirection: 'row', paddingTop: 10, justifyContent: 'space-between' }}>
                             <View style={{ flexDirection: 'row' }}>
                                 <View style={{ alignItems: 'center' }}>
@@ -135,7 +198,7 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
                                     <ButtonText fontWeight='400' fontSize={15}>关注</ButtonText>
                                 </Button>
                                 <TouchableOpacity
-                                    style={{ marginLeft: 10, width: 40, height: 28, alignItems: 'center', borderRadius: 15, borderWidth: 1, justifyContent: 'center', borderColor: '#cacbc8',backgroundColor:'rgba(204,205,202,0.2)' }}
+                                    style={{ marginLeft: 10, width: 40, height: 28, alignItems: 'center', borderRadius: 15, borderWidth: 1, justifyContent: 'center', borderColor: '#cacbc8', backgroundColor: 'rgba(204,205,202,0.2)' }}
                                 >
                                     <Ionicons name='chatbubble-ellipses-outline' size={18} color={'white'} />
                                 </TouchableOpacity>
@@ -148,21 +211,11 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
     }
 
     return (
-        // <ImageBackground source={require('../sources/Bg1.jpg')} style={{width:windowSet.width,height:windowSet.height}} >
-        <View style={{ backgroundColor: "grey" , height: windowSet.height}}>
-            {/* <DynamicHeader animateHeaderValue={scrollOffsetY} pressAvatar={pressAvatar} openMenu={showMenu}></DynamicHeader> */}
-            <DynamicMiniHead backgroundColor='transparent' component={InfoHeader} maxHeight={350} minHeight={95} scrollY={scrollOffsetY} componentProps={null}
+        <View style={{ backgroundColor: "grey", height: windowSet.height }}>
+            <DynamicMiniHead backgroundColor='transparent' component={InfoHeader} maxHeight={400} minHeight={95} scrollY={scrollOffsetY} componentProps={null}
                 containerStyle={{ borderTopLeftRadius: 20, borderTopRightRadius: 20, }} />
             <Box style={{ display: 'flex', flexDirection: 'row', backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, height: 40, width: windowSet.width }}>
                 <Text style={{ paddingTop: 10, paddingLeft: 30, alignContent: 'center', alignSelf: 'flex-start', fontWeight: 'bold' }}>TA的笔记</Text>
-                <Animatable.View style={{ alignSelf: 'center' }} animation={searchVisible ? 'flipInY' : ''} duration={500} >
-                    <AnimatedSearchBar platform='ios' value={searchVal} onChangeText={(val) => { setSearchVal(val) }}
-                        containerStyle={{ height: 25, alignSelf: 'center', width: windowSet.width * 0.7, display: searchVisible ? 'flex' : 'none' }}
-                        inputContainerStyle={{ height: 25, width: windowSet.width * 0.68, backgroundColor: '#f0f0f2', borderRadius: 15 }}
-                        onCancel={() => { setSearchVisible(false) }}
-                        round={true}
-                    />
-                </Animatable.View>
                 <AntdIcon size={17} name='search1' style={{ alignSelf: 'center', paddingTop: 5, display: searchVisible ? 'none' : 'flex', marginLeft: -20, paddingLeft: 270 }}
                     onPress={PressSearch}
                 />
@@ -171,13 +224,21 @@ export default function OtherInfo({ showMenu, pressAvatar, closeAvatar }) {
                 style={{ backgroundColor: 'white' }}
                 scrollEventThrottle={16}
                 onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollOffsetY } } }], { useNativeDriver: false })}>
-                <MyCollection />
-                <Text style={{ alignSelf: 'center', color: '#c4c5cb', fontWeight: 'bold' }}>已经到底啦~</Text>
-                <View style={{ height: 120 }} />
+                <MyCollection userId={userId} />
             </ScrollView>
         </View>
     );
 }
+
+type BlogInfo = {
+    Title: string,//博客标题
+    Content: string,//文章内容
+    Tags: string, //文章标签
+    UserId: string,//作者
+    PreviewStr: string //博客预览图
+    TimeString: string//创建时间格式为EnglishDate,如:August 18,2024
+}
+
 
 
 const exampleBlog = [{

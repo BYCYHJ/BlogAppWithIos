@@ -3,6 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';
 import 'react-native-get-random-values';
 
+const BaseUrl = 'http://132.232.108.176:5200';
+const DevUrl = "http://192.168.2.117:5046";
+
 //全局唯一user信息
 let uniqueUserInfo = undefined;
 
@@ -11,14 +14,17 @@ export function setUniqueUserInfo(userInfo) {
 }
 
 export function getUniqueUserInfo() {
-  return uniqueUserInfo;
+  if (uniqueUserInfo) {
+    console.log(uniqueUserInfo);
+    return uniqueUserInfo;
+  }
 }
 
 // 获取验证码
 export function getPhoneTokenCode({ params }) {
   return axios({
     method: 'get',
-    url: 'http://132.232.108.176:5211/api/Login/GetPhoneTokenCode',
+    url: BaseUrl + '/api/Login/GetPhoneTokenCode',
     params: params
   });
 }
@@ -28,7 +34,7 @@ export async function getUserInfo() {
   const token = await getStorage('token');
   return axios({
     method: 'post',
-    url: 'http://132.232.108.176:5211/api/Login/GetUserInfo',
+    url: BaseUrl + '/api/Login/GetUserInfo',
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
@@ -41,7 +47,7 @@ export async function getUniqueUser(userId) {
   const token = await getStorage("token");
   return axios({
     method: 'post',
-    url: 'http://132.232.108.176:5211/api/Login/GetSingleUserInfo',
+    url: BaseUrl + '/api/Login/GetSingleUserInfo',
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
@@ -58,7 +64,7 @@ export async function publishBlog(blog) {
   return axios({
     method: 'post',
     // url: 'http://132.232.108.176:5212/api/Blog/CreateBlog',
-    url: 'http://192.168.2.117:5211/api/Blog/CreateBlog',
+    url: DevUrl + '/api/Blog/CreateBlog',
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
@@ -72,7 +78,7 @@ export async function photoUploadToServer({ base64Str }) {
   const userId = uniqueUserInfo == undefined ? "" : uniqueUserInfo.userId;
   return axios({
     method: 'post',
-    url: 'http://132.232.108.176:5211/api/User/UploadAvatar',
+    url: BaseUrl + '/api/User/UploadAvatar',
     data: {
       fileUrl: '/mydata/PlatformResource/',
       fileName: uuidv4() + ".png",
@@ -88,7 +94,7 @@ export async function GetUniqueBlog(blogId) {
   if (!token) { return; }
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Blog/GetUniqueBlog',
+    url: DevUrl + '/api/Blog/GetUniqueBlog',
     params: {
       blogId: blogId
     },
@@ -104,7 +110,7 @@ export async function GetRecommendBlogs(index, pageSize) {
   if (!token) { return; }
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Blog/GetRecommendBlog',
+    url: DevUrl + '/api/Blog/GetRecommendBlog',
     params: {
       index: index,
       pageSize: pageSize,
@@ -120,11 +126,27 @@ export async function GetBlogsByKeywords(keyword, page, size) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://132.232.108.176:5213/api/BlogSearch/GetBlogsWithKeyword',
+    url: BaseUrl + '/api/BlogSearch/GetBlogsWithKeyword',
     params: {
       keyword: keyword,
       index: page,
       pageSize: size,
+    },
+    headers: {
+      Authorization: "Bearer " + token,
+    }
+  });
+}
+
+export async function GetPersonalBlogs(userId, index, pageSize) {
+  const token = await getStorage("token");
+  return axios({
+    method: 'get',
+    url: DevUrl + '/api/Blog/GetAllPersonalBlogs',
+    params: {
+      userId: userId,
+      index: index,
+      pageSize: pageSize,
     },
     headers: {
       Authorization: "Bearer " + token,
@@ -137,7 +159,7 @@ export async function GetHighestComments(blogId, index, pageSize) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Comments/GetBlogHighestComments',
+    url: DevUrl + '/api/Comments/GetBlogHighestComments',
     params: {
       blogId: blogId,
       index: index,
@@ -154,7 +176,7 @@ export async function GetChildrenComments(commentId, index, pageSize) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Comments/GetChildrenComments',
+    url: DevUrl + '/api/Comments/GetChildrenComments',
     params: {
       commentId: commentId,
       index: index,
@@ -171,7 +193,7 @@ export async function PublishComment(content, blogId, userId, parentId = null, h
   const token = await getStorage("token");
   return axios({
     method: 'post',
-    url: 'http://192.168.2.117:5211/api/Comments/CreateComment',
+    url: DevUrl + '/api/Comments/CreateComment',
     data: {
       content: content,
       blogId: blogId,
@@ -190,7 +212,7 @@ export async function AddCommentLike(commentId) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Comments/AddLike',
+    url: DevUrl + '/api/Comments/AddLike',
     params: {
       commentId: commentId,
     },
@@ -205,7 +227,7 @@ export async function RemoveCommentLike(commentId) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Comments/RemoveLike',
+    url: DevUrl + '/api/Comments/RemoveLike',
     params: {
       commentId: commentId,
     },
@@ -220,13 +242,24 @@ export async function GetAllPersonalNotification(index, pageSize) {
   const token = await getStorage("token");
   return axios({
     method: 'get',
-    url: 'http://192.168.2.117:5211/api/Notification/GetAllPersonalNotification',
+    url: DevUrl + '/api/Notification/GetAllPersonalNotification',
     params: {
       index: index,
       pageSize: pageSize
     },
     headers: {
       Authorization: "Bearer " + token,
+    }
+  });
+}
+
+export async function GetAIAnswer(question) {
+  return axios({
+    responseType: 'stream',//流式返回
+    method: 'get',
+    url: DevUrl + '/api/Chat/AIChat',
+    params: {
+      content: question
     }
   });
 }

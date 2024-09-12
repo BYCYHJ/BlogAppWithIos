@@ -5,9 +5,9 @@ import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { Avatar } from '@rneui/base';
 import getSharedConnection, { demapMsg, mapMsg } from '../services/connection';
-import { chatHistoryTableName, getHistory, writeToRealm } from '../services/realmTable';
+//import { chatHistoryTableName, getHistory, writeToRealm } from '../services/realmTable';
 
-
+  
 const uuidv4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.floor(Math.random() * 16)
@@ -54,22 +54,22 @@ const BlogChat = ({ navigation, route }) => {
   initialSignalR();
 
   //获取历史消息
-  useEffect(() => {
-    async () => {
-      try {
-        let arrays = await getHistory(route.params.senderId, route.params.recipientId);
-        console.log(arrays);
-        if (arrays.count != 0) {
-          const msgArr = arrays.forEach(message => {
-            return mapMsg(message);
-          });
-          setMessages([...msgArr,...messages]);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   async () => {
+  //     try {
+  //       let arrays = await getHistory(route.params.senderId, route.params.recipientId);
+  //       console.log(arrays);
+  //       if (arrays.count != 0) {
+  //         const msgArr = arrays.forEach(message => {
+  //           return mapMsg(message);
+  //         });
+  //         setMessages([...msgArr,...messages]);
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  // }, []);
 
   const addMessage = (message: MessageType.Any) => {
     setMessages([message, ...messages]);
@@ -90,7 +90,7 @@ const BlogChat = ({ navigation, route }) => {
       };//前端展示的msg
     }
     addMessage(contentMsg);//加入展示的Msg
-    writeToRealm(sendMsg, chatHistoryTableName);//存入realm
+    //writeToRealm(sendMsg, chatHistoryTableName);//存入realm
     const connection = await getSharedConnection();
     connection.invoke("SendMessage", JSON.stringify(sendMsg));
   }
@@ -104,7 +104,7 @@ const BlogChat = ({ navigation, route }) => {
       <View style={styles.TopHeader}>
         <Entypo size={20} name="chevron-thin-left" style={[styles.HeaderContent, { paddingLeft: 12, paddingRight: 20 }]} />
         <Avatar rounded size={30} source={AvatarImg} containerStyle={{ marginBottom: 5 }} avatarStyle={{ resizeMode: 'stretch', height: 30, width: 30 }} />
-        <Text style={[styles.HeaderContent, { fontSize: 18, paddingLeft: 15, width: global.windowSet.width * 0.4 }]}>jun_anananan</Text>
+        <Text style={[styles.HeaderContent, { fontSize: 18, paddingLeft: 15, width: windowSet.width * 0.4 }]}>jun_anananan</Text>
       </View>
       <Chat
         showUserNames={true}

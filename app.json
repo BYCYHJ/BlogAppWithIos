@@ -32,20 +32,34 @@
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "16.0"
+            "deploymentTarget": "16.0",
+            "infoPlist": {
+              "NSAppTransportSecurity": {
+                "NSAllowsArbitraryLoads": true
+              }
+            }
           }
         }
       ]
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brightrel.BlogAppWithIos"
+      "bundleIdentifier": "com.brightrel.BlogAppWithIos",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -54,6 +68,12 @@
       "eas": {
         "projectId": "3e456c4a-c67e-4737-a7d7-4c4751777e26"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3e456c4a-c67e-4737-a7d7-4c4751777e26"
     }
   }
 }

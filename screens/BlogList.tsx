@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Dimensions, View, Text, Button, StyleSheet, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { Dimensions, View, Text, Button, StyleSheet, FlatList, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, ListItem, Card } from '@rneui/themed';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -7,9 +7,11 @@ import { ScrollTabView } from 'react-native-scroll-head-tab-view';
 import { SearchBar } from '@rneui/themed';
 import { GetRecommendBlogs, GetUniqueBlog } from '../services/services';
 import { Image, Skeleton } from '@rneui/base';
-import { AddIcon, Box, Fab, FabIcon, FabLabel, Spinner } from '@gluestack-ui/themed';
+import { AddIcon, Box, Fab, FabIcon, FabLabel, Spinner, Input, InputField } from '@gluestack-ui/themed';
 import { Path, Svg } from 'react-native-svg';
 import { EasyLoading, Loading } from '../components/Loading';
+import Feather from 'react-native-vector-icons/Feather';
+import SkeletonImage from 'react-native-skeleton-image';
 
 
 
@@ -20,6 +22,8 @@ function TabView1(props) {
     const [blogs, setBlogs] = useState([]);
     const [isloading, setIsLoading] = useState(false);
     const waitingCount = [1, 2, 3, 4];
+    const [isLoadMore, setIsLoadMore] = useState(true);
+    const [refreshing, setRefreshing] = useState(false); // 刷新状态
 
     useEffect(() => {
         (async () => {
@@ -27,22 +31,25 @@ function TabView1(props) {
         })();
     }, []);
 
+    //到达底部时逻辑
     const reachEnd = async () => {
+        //如果条数本来就小于4条，不需要加载
+        if (!isLoadMore) { return; }
         setIsLoading(true);
-        //如果条数本来就小于5条，不需要加载
-        if (!blogs) { return; }
-        if (blogs.length <= 5) return;
         try {
-            const response = await GetRecommendBlogs(page.current + 1, 5);
+            const response = await GetRecommendBlogs(page.current, 4);
             const { data, status } = { data: response.data, status: response.status };
             console.log(data);
             if (status < 299) {
                 if (data.StatusCode >= 299) {
-                    page.current = page.current -1;//将页数恢复
+                    setIsLoading(false);
                     return;
-                } else {
-                    const blog = data.Data;
-                    setBlogs([...blogs,...blog]);
+                }
+                const blog = data.Data;
+                setBlogs([...blogs, ...blog]);
+                page.current = ++page.current;
+                if (data.Data.length < 4) {
+                    setIsLoadMore(false);
                 }
             }
         } catch (error) {
@@ -55,7 +62,7 @@ function TabView1(props) {
     const getBlogs = async () => {
         setIsLoading(false);
         try {
-            const response = await GetRecommendBlogs(1, 5);
+            const response = await GetRecommendBlogs(1, 4);
             const { data, status } = { data: response.data, status: response.status };
             if (status < 299) {
                 if (data.StatusCode >= 299) {
@@ -63,12 +70,32 @@ function TabView1(props) {
                 } else {
                     const blog = data.Data;
                     setBlogs([...blog]);
+                    //是否有下一页
+                    if (data.Data.length < 4) {
+                        setIsLoadMore(false);
+                    } else {
+                        page.current = ++page.current;
+                    }
                 }
             }
         } catch (error) {
             console.log(error);
         }
     }
+
+    const onScroll = (event) => {
+        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+        const isNearTop = contentOffset.y <= 10; // 10是阈值，可以根据需要调整
+        const isNearBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 10; // 10是阈值，可以根据需要调整
+        //上拉操作
+        if (isNearTop && refreshing === false) {
+            //   getBlogs();
+        }
+        //下拉加载操作
+        if (isNearBottom && isLoadMore === true && isloading === false) {
+            reachEnd();
+        }
+    };
 
 
     //博客列表画面
@@ -106,8 +133,8 @@ function TabView1(props) {
                 <ListItem containerStyle={{ borderRadius: 20, width: windowSet.width * 0.98, backgroundColor: 'white', display: 'flex', alignSelf: 'center', height: windowSet.height * 0.2 }} >
                     <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Avatar size={20} rounded title='An' containerStyle={{ backgroundColor: '#b999e3' }} />
-                            <Text style={{ paddingLeft: 5, fontWeight: 'bold', color: 'grey' }}>AnAn</Text>
+                            <Avatar size={20} rounded source={{ uri: item.AvatarUrl }} containerStyle={{ backgroundColor: '#b999e3' }} />
+                            <Text style={{ paddingLeft: 5, fontWeight: 'bold', color: 'grey' }}>{item.UserName}</Text>
                             <View style={{ display: 'flex', flexDirection: 'row', width: windowSet.width * 0.75 }}>
                                 <FlatList horizontal={true} data={item.Tags} style={{ height: 15, flexDirection: 'row-reverse' }}
                                     renderItem={({ item }) => {
@@ -127,18 +154,17 @@ function TabView1(props) {
                         </View>
                         <View style={{ height: 8 }} />
                         <ListItem.Content>
-                            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
                                 {/* 标题、内容、点赞数 */}
-                                <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <View style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
                                     <ListItem.Title>
                                         <Card.Title>{item.Title}</Card.Title>
                                     </ListItem.Title>
-                                    <View style={{ height: 5, width: 200, alignContent: 'center' }} />
-                                    <Text style={{ width: windowSet.width * 0.62, }}>
+                                    <Text style={{ width: item.PreviewPhoto ? windowSet.width * 0.62 : windowSet.width * 0.9, paddingTop: 10 }}>
                                         {item.Content.length > 50 ? item.Content.slice(0, 60) + '...' : item.Content}
                                     </Text>
                                     <View style={{ height: 5 }} />
-                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
                                         <AntDesign name='staro' color={'grey'}></AntDesign>
                                         <Text style={styles.bottomActionText}>10</Text>
                                         <Text style={{ paddingLeft: 15, color: '#e6e6e6', marginTop: -2 }}>|</Text>
@@ -150,9 +176,16 @@ function TabView1(props) {
                                     </View>
                                 </View>
                                 {/* 预览图 */}
-                                <Image source={{ uri: item.PreviewPhoto }}
-                                    style={{ width: windowSet.width * 0.28, height: windowSet.width * 0.28, borderRadius: 20, marginLeft: 5 }}
-                                />
+                                {
+                                    item.PreviewPhoto && item.PreviewPhoto != "" ?
+                                        <Image
+                                            resizeMode='stretch'
+                                            source={{ uri: item.PreviewPhoto }}
+                                            style={{ width: windowSet.width * 0.28, height: windowSet.width * 0.28, borderRadius: 20, marginLeft: 5 }}
+                                        />
+                                        :
+                                        <View />
+                                }
                             </View>
                         </ListItem.Content>
                     </View>
@@ -191,15 +224,19 @@ function TabView1(props) {
     }
 
     return (
-        <ScrollView style={{}}>
-            {blogs ? blogs?.length ?
-                <FlatList scrollEnabled={false} style={{}} data={blogs} renderItem={renderItem} />
-                : <FlatList scrollEnabled={false} onEndReached={reachEnd} data={waitingCount} renderItem={renderWaiting} />
-                : <Nodata />
-            }
-            <Spinner style={{ display: isloading ? 'flex' : 'none' }} color="grey" />
-            <Loading style={{ backgroundColor: 'transparent' }} />
-        </ScrollView>
+        <View style={{ height: windowSet.height * 0.76 }}>
+            <ScrollView onScroll={onScroll}>
+                {blogs ? (
+                    blogs?.length ?
+                        <FlatList scrollEnabled={false} data={blogs} renderItem={renderItem} />
+                        : <FlatList scrollEnabled={false} data={waitingCount} renderItem={renderWaiting} />
+                )
+                    : <Nodata />
+                }
+                <Spinner style={{ display: isloading ? 'flex' : 'none' }} color="grey" />
+                <Loading style={{ backgroundColor: 'transparent' }} />
+            </ScrollView>
+        </View>
     );
 }
 
@@ -210,7 +247,7 @@ function TabView2(props) {
 export default function BlogList({ navigation }) {
 
     const [headerHeight, setHeaderHeight] = useState(200);
-    const headerOnLayout = useCallback((event: any) => {
+    const headerOnLayout = useCallback((event) => {
         const { height } = event.nativeEvent.layout;
         setHeaderHeight(height);
     }, []);
@@ -221,17 +258,14 @@ export default function BlogList({ navigation }) {
     return (
         <View style={{ height: windowSet.height, width: windowSet.width, backgroundColor: '#eff0f1', alignItems: 'center' }}>
             <View style={{ height: 50 }} />
-            <SearchBar platform='ios'
-                style={{ borderColor: 'blue' }}
-                containerStyle={{ height: 30, width: windowSet.width * 0.95, backgroundColor: '#eff0f1' }}
-                inputContainerStyle={{ maxHeight: 30, backgroundColor: 'white' }}
-                inputStyle={{ fontSize: 16, fontWeight: '400' }}
-                showLoading={true}
-                placeholder='seach ...'
-                value={searchVal}
-            />
+            <Input style={{ backgroundColor: 'white', width: windowSet.width * 0.95, height: 30, borderWidth: 0, borderRadius: 10 }} >
+                <Feather name='search' size={20} color={'grey'} style={{ alignSelf: 'center', paddingLeft: 5 }} />
+                <InputField />
+            </Input>
+
             <Box>
-                <ScrollTabView headerHeight={30}
+                <ScrollTabView
+                    headerHeight={30}
                     tabBarPosition='top'
                     tabBarTextStyle={{ fontWeight: 'bold' }}
                 >
@@ -248,15 +282,6 @@ export default function BlogList({ navigation }) {
             </Box>
         </View>
     );
-}
-
-
-type BlogInfo = {
-    Title: string,
-    Content: string,
-    Tags: Array<string>,
-    stars: number,
-    PreviewPhoto: string
 }
 
 const styles = StyleSheet.create({
